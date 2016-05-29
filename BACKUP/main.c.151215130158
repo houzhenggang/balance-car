@@ -1,0 +1,12 @@
+#include "iom128v.h"
+#include "motor.h"
+
+int main(void)
+{
+	motor_init();
+	while(1)
+	{
+	
+	}
+	return 0;
+}

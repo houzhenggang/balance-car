@@ -1,0 +1,114 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "macros.h"
+#include "motor.h"
+#include "usart.h"
+#include "encoder.h"
+#include "mpu6050.h"
+#include "i2c.h"
+#include "pid.h"
+
+unsigned char rchar;
+
+unsigned int loops = 0;
+unsigned char loopsBit = 0;
+
+unsigned int Kp_A=4000, Ki_A=200, Kd_A=4500;
+PID_ANGLGE PID_angle;	
+float angle_Targer;
+float angle, angle_dot;
+
+int PWM_L,PWM_R;
+int PWM_Balance;
+int PWM_Turn;
+
+int speed_Targer = 100;
+
+float Kp_LS=10, Ki_LS=0, Kd_LS=0;
+PID_SPEED PID_Lspeed;
+int Lspeed=0;
+long Sum_Lspeed = 0;
+
+float Kp_RS=10, Ki_RS=0, Kd_RS=0;
+PID_SPEED PID_Rspeed;
+int Rspeed=0;
+long Sum_Rspeed = 0;
+
+int main(void)
+{
+	usart0_init(9600);
+	printf("\tusart0 init OK!\n");
+	
+	motor_init();
+	
+	encoder_init();
+	
+	MPU6050_Config();
+	Get_Angle(&angle, &angle_dot);			
+	angle_Targer = angle;
+	PID_angle_init(&PID_angle, Kp_A, Ki_A, Kd_A, angle_Targer);	
+	
+	PID_speed_init(&PID_Lspeed, Kp_LS, Ki_LS, Kd_LS, speed_Targer);
+	PID_speed_init(&PID_Rspeed, Kp_RS, Ki_RS, Kd_RS, speed_Targer);
+	
+	timer3_init();
+	
+	while(1)
+	{
+	    if(loopsBit & 0x01)
+		{	   
+		   loopsBit &= ~(0x01);
+		   
+		   Get_Angle(&angle, &angle_dot);			
+		   
+	 	   PWM_Balance = PID_Proc(&PID_angle, angle, angle_dot);
+		   
+	 	   PWM_L = PWM_Balance - PWM_Turn; 
+	 	   PWM_R = PWM_Balance + PWM_Turn;
+	 
+	 	   //PWM_output(PWM_L, PWM_R);   
+		}
+		
+		if(loopsBit & 0x02)
+		{
+		   loopsBit &= ~(0x02);
+		   Get_Speed(&Lspeed, &Rspeed);
+		   PID_devCal(&PID_Lspeed, Lspeed);
+		   Sum_Lspeed += PID_Inc(&PID_Lspeed);
+		   PWM_output(Sum_Lspeed, 0);
+		}
+		
+		if(loopsBit & 0x04)
+		{
+		   loopsBit &= ~(0x04);
+		}
+		
+		if(loopsBit & 0x08)
+		{
+	 	   loopsBit &= ~(0x08);
+		   loops = 0;	   	
+		}
+	}
+	
+	return 0;
+}
+
+//定时器3中断溢出,1ms中断一次
+#pragma interrupt_handler timer3_interrupt: 30
+void timer3_interrupt(void) 
+{    
+	 TCNT3=49535;
+	 loops++; 
+	 
+	 if(!(loops % 3))     {loopsBit |= 0x01;}  
+	 if(!(loops % 10))    {loopsBit |= 0x02;} 
+	 if(!(loops % 100))   {loopsBit |= 0x04;}   
+	 if(!(loops % 1000))  {loopsBit |= 0x08;}  
+}
+
+//串口0接收中断
+#pragma interrupt_handler uart_receive:19
+void uart_receive(void)
+{   
+   rchar = UDR0;
+}

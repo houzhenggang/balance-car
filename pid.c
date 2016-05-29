@@ -1,0 +1,46 @@
+#include "iom128v.h"
+#include "pid.h"
+
+void PID_angle_init(PID_ANGLGE *pid, unsigned int Kp, unsigned int Ki, unsigned int Kd, unsigned int target)
+{
+	pid->target = target;
+	pid->integral = 0;	
+	pid->Kp = Kp;
+	pid->Ki = Ki;
+	pid->Kd = Kd;
+}
+
+int PID_Proc(PID_ANGLGE *pid, float current, float differential)
+{
+	float offset;
+
+	offset = pid->target - current;
+	pid->integral += offset;
+
+	return (int)(pid->Kp*offset + pid->Ki*pid->integral + pid->Kd*differential);
+}
+
+void PID_speed_init(PID_SPEED *pid,float kp,float ki,float kd,int target)
+{
+	pid->kp = kp;
+	pid->ki = ki;
+	pid->kd = kd;
+	pid->target = target;
+	pid->enote[PRESENT] = 0;
+	pid->enote[LAST] = 0;
+	pid->enote[BEFORE] = 0;
+	pid->sumerr = 0;
+}
+
+int PID_Inc(PID_SPEED *pid, int fbv)
+{
+    pid->enote[BEFORE] = pid->enote[LAST];
+	pid->enote[LAST] = pid->enote[PRESENT];
+	pid->enote[PRESENT] = (pid->target - fbv);
+	
+	pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]); 
+	return ((int)pid->lastcontrol);
+}
+
+
+

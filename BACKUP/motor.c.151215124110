@@ -1,0 +1,120 @@
+#include "iom128v.h"
+#include "motor.h"
+/*
+//电机A：PWM引脚PB5，方向控制引脚PC0，PC1
+//电机B: PWM引脚PB6，方向控制引脚PC2，PC3
+void motor_io_init(void)
+{
+	//PE5,6设置为输出,控制PWM
+	DDRE |= (0x03<<5);
+	PORTE &= ~(0x03<<5);
+	
+	//PC0,1,2,3设置为输出控制方向
+	DDRC |= (0x0F);
+	PORTC &= ~(0x0F);
+}
+
+//电机pwm初始化
+void motor_pwm_init(void)
+{
+	OCR1A = 0;
+	OCR1B = 0;
+	
+	//8位快速PWM
+	TCCR1A |= (1<<WGM10);
+	TCCR1B |= (1<<WGM12);
+	
+	//比较匹配时置位
+	TCCR1A |= (1<<COM1A1) | (1<<COM1B1);
+	
+	//1分频
+	TCCR1B |= (1<<CS10);
+}
+
+//电机初始化
+void motor_init(void)
+{
+ 	motor_io_init();
+	motor_pwm_init();
+}
+
+//电机A转动
+void motor_A_run(int pwm)
+{
+ 	if(pwm>=0)
+	{
+	 	OCR1A = pwm; 
+		PORTC |= 0x02;
+	}
+	else
+	{
+	    OCR1A = -pwm; 
+		PORTC |= 0x01;
+	}
+}
+
+//电机B转动
+void motor_B_run(int pwm)
+{
+ 	if(pwm>=0)
+	{
+	 	OCR1B = pwm; 
+		PORTC |= 0x08;
+	}
+	else
+	{
+	    OCR1A = -pwm; 
+		PORTC |= 0x04;
+	}
+}
+*/
+//-----PWM输出端口及寄存器初始化-----
+void pwm_init(void)
+{
+	DDRE|= 0xD8;  //PE7,PE6,PE4,PE3输出 0b1101 1000
+	PORTE = 0xFF; //初始输出0
+
+	OCR3A = 0;
+	OCR3B = 0;
+	TCCR3A = (1 << WGM30);	//8位相位修正PWM模式
+	TCCR3A |= (1 << COM3A1)|(1 << COM3B1);  //OC3A(PE3)OC3B(PE4)输出PWM
+	TCCR3B = (1 << CS31);	//8分频
+}
+
+//-----A路PWM输出-----
+//参数： dc  控制量，无符号字节型，取值0~255，表示PWM占空比0~100
+//       dr  电机转动方向   0：正转   1：反转
+void pwm_oc3a_output(unsigned char dc,unsigned char dr)
+{
+
+	OCR3A = dc;
+	if (dr==0)
+	{
+		TCCR3A &= ~(1 << COM3A0);  //OC3A(PE3)输出PWM
+		PORTE &=~(1<<6);
+	}
+	else
+	{
+		TCCR3A |= (1 << COM3A0);  //OC3A(PE3)输出PWM
+		PORTE |=(1<<6);
+	}
+}
+
+//-----B路输出-----
+//参数： dc  控制量，无符号字节型，取值0~255，表示PWM占空比0~100
+//       dr  电机转动方向   0：正转   1：反转
+void pwm_oc3b_output(unsigned char dc,unsigned char dr)
+{
+
+	OCR3B = dc;
+	if (dr==0)
+	{
+		TCCR3A &= ~(1 << COM3B0);  //OC3B(PE4)输出PWM
+		PORTE &=~(1<<7);
+	}
+	else
+	{
+		TCCR3A |= (1 << COM3B0);  //OC3B(PE4)输出PWM
+		PORTE |=(1<<7);
+	}
+}

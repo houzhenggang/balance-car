@@ -1,0 +1,19 @@
+#ifndef __PID_H
+#define __PID_H
+
+typedef struct PID
+{
+	float target;
+	float integral;
+	float Kp;	
+	float Ki;	
+	float Kd;	
+}  pid_s, *pid_t;
+
+void PID_angle_init(pid_t pid, unsigned int Kp, unsigned int Ki, unsigned int Kd, unsigned int target);
+int PID_proc(pid_s *p, float current, float differential);
+void PID_devCal(PID_Struture* pid,int fbv);
+int PID_Inc(PID_Struture* pid);
+int PID_Nor(PID_Struture* pid);
+
+#endif

@@ -1,0 +1,22 @@
+#include "iom128v.h"
+#include "encoder.h"
+
+//编码器初始化
+void encoder_init(void)
+{
+ 	 DDRD &= ~0x03;
+	 EIMSK |= (1<<INT0) | (1<<INT1);
+	 EICRA &= 0xF0;
+	 EICRA |= (1<<ISC01) | (1<<ISC11);
+}
+
+//T3定时器初始化，用于定时
+//8分频,最大计时时间65535*(8/16000000)*1000 = 32.768ms
+//则定时10ms计数值为 65535*((32.768-10)/32.768) = 45535
+void timer3_init(void)
+{
+ 	 TCCR3A=0X00;
+	 TCCR3B=(1<<CS31);
+	 TCNT3=55535;
+	 ETIMSK|=(1<<TOIE3);
+}

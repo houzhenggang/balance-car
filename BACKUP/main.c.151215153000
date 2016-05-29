@@ -1,0 +1,18 @@
+#include "iom128v.h"
+#include "motor.h"
+#include "usart.h"
+
+int main(void)
+{
+	usart0_init(9600);
+	printf("usart0 init OK!\n");
+	
+	motor_init();
+	printf("motor init OK!\n");
+	while(1)
+	{
+	   printf("the data%c",USART0_receive());
+	}
+	return 0;
+}
+

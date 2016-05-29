@@ -1,0 +1,225 @@
+                        .module usart.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile usart.c
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\usart.c
+ 0000                   .dbfunc e usart0_init _usart0_init fV
+ 0000           ;           band -> R10,R11
+                        .even
+ 0000           _usart0_init::
+ 0000 0E940000          xcall push_xgsetF00C
+ 0004 5801              movw R10,R16
+ 0006                   .dbline -1
+ 0006                   .dbline 7
+ 0006           ; #include "iom128v.h"
+ 0006           ; #include "macros.h"
+ 0006           ; #include "usart.h"
+ 0006           ; #include "stdio.h"
+ 0006           ; 
+ 0006           ; void usart0_init(unsigned int band)//USART 初始化
+ 0006           ; {     
+ 0006                   .dbline 9
+ 0006           ;       //设置帧格式: 8 个数据位, 1个停止位
+ 0006           ;       UCSR0C = (1<<UCSZ00)|(1<<UCSZ01); 
+ 0006 86E0              ldi R24,6
+ 0008 80939500          sts 149,R24
+ 000C                   .dbline 12
+ 000C           ;       
+ 000C           ;       //U2X=0时的公式计算
+ 000C           ;     UBRR0L= (16000000/band/16-1)%256;
+ 000C 1501              movw R2,R10
+ 000E 4424              clr R4
+ 0010 5524              clr R5
+ 0012 40E0              ldi R20,0
+ 0014 54E2              ldi R21,36
+ 0016 64EF              ldi R22,244
+ 0018 70E0              ldi R23,0
+ 001A 5A92              st -y,R5
+ 001C 4A92              st -y,R4
+ 001E 3A92              st -y,R3
+ 0020 2A92              st -y,R2
+ 0022 8A01              movw R16,R20
+ 0024 9B01              movw R18,R22
+ 0026 0E940000          xcall div32s
+ 002A 40E1              ldi R20,16
+ 002C 50E0              ldi R21,0
+ 002E 60E0              ldi R22,0
+ 0030 70E0              ldi R23,0
+ 0032 7A93              st -y,R23
+ 0034 6A93              st -y,R22
+ 0036 5A93              st -y,R21
+ 0038 4A93              st -y,R20
+ 003A 0E940000          xcall div32s
+ 003E 1801              movw R2,R16
+ 0040 2901              movw R4,R18
+ 0042 41E0              ldi R20,1
+ 0044 50E0              ldi R21,0
+ 0046 60E0              ldi R22,0
+ 0048 70E0              ldi R23,0
+ 004A 241A              sub R2,R20
+ 004C 350A              sbc R3,R21
+ 004E 460A              sbc R4,R22
+ 0050 570A              sbc R5,R23
+ 0052 40E0              ldi R20,0
+ 0054 51E0              ldi R21,1
+ 0056 60E0              ldi R22,0
+ 0058 70E0              ldi R23,0
+ 005A 7A93              st -y,R23
+ 005C 6A93              st -y,R22
+ 005E 5A93              st -y,R21
+ 0060 4A93              st -y,R20
+ 0062 8101              movw R16,R2
+ 0064 9201              movw R18,R4
+ 0066 0E940000          xcall mod32s
+ 006A 09B9              out 0x9,R16
+ 006C                   .dbline 13
+ 006C           ;     UBRR0H= (16000000/band/16-1)/256;
+ 006C 1501              movw R2,R10
+ 006E 4424              clr R4
+ 0070 5524              clr R5
+ 0072 40E0              ldi R20,0
+ 0074 54E2              ldi R21,36
+ 0076 64EF              ldi R22,244
+ 0078 70E0              ldi R23,0
+ 007A 5A92              st -y,R5
+ 007C 4A92              st -y,R4
+ 007E 3A92              st -y,R3
+ 0080 2A92              st -y,R2
+ 0082 8A01              movw R16,R20
+ 0084 9B01              movw R18,R22
+ 0086 0E940000          xcall div32s
+ 008A 40E1              ldi R20,16
+ 008C 50E0              ldi R21,0
+ 008E 60E0              ldi R22,0
+ 0090 70E0              ldi R23,0
+ 0092 7A93              st -y,R23
+ 0094 6A93              st -y,R22
+ 0096 5A93              st -y,R21
+ 0098 4A93              st -y,R20
+ 009A 0E940000          xcall div32s
+ 009E 1801              movw R2,R16
+ 00A0 2901              movw R4,R18
+ 00A2 41E0              ldi R20,1
+ 00A4 50E0              ldi R21,0
+ 00A6 60E0              ldi R22,0
+ 00A8 70E0              ldi R23,0
+ 00AA 241A              sub R2,R20
+ 00AC 350A              sbc R3,R21
+ 00AE 460A              sbc R4,R22
+ 00B0 570A              sbc R5,R23
+ 00B2 40E0              ldi R20,0
+ 00B4 51E0              ldi R21,1
+ 00B6 60E0              ldi R22,0
+ 00B8 70E0              ldi R23,0
+ 00BA 7A93              st -y,R23
+ 00BC 6A93              st -y,R22
+ 00BE 5A93              st -y,R21
+ 00C0 4A93              st -y,R20
+ 00C2 8101              movw R16,R2
+ 00C4 9201              movw R18,R4
+ 00C6 0E940000          xcall div32s
+ 00CA 00939000          sts 144,R16
+ 00CE                   .dbline 16
+ 00CE           ;       
+ 00CE           ;       //使能接收中断，使能接收，使能发送
+ 00CE           ;       UCSR0A = 0x00;
+ 00CE 2224              clr R2
+ 00D0 2BB8              out 0xb,R2
+ 00D2                   .dbline 17
+ 00D2           ;       UCSR0B = (1<<RXCIE0)|(1<<RXEN0)|(1<<TXEN0);
+ 00D2 88E9              ldi R24,152
+ 00D4 8AB9              out 0xa,R24
+ 00D6                   .dbline 20
+ 00D6           ;       
+ 00D6           ;       //开总中断
+ 00D6           ;       SEI();
+ 00D6 7894              sei
+ 00D8                   .dbline -2
+ 00D8           L1:
+ 00D8                   .dbline 0 ; func end
+ 00D8 0C940000          xjmp pop_xgsetF00C
+ 00DC                   .dbsym r band 10 i
+ 00DC                   .dbend
+ 00DC                   .dbfunc e send_char _send_char fV
+ 00DC           ;           data -> R16
+                        .even
+ 00DC           _send_char::
+ 00DC                   .dbline -1
+ 00DC                   .dbline 25
+ 00DC           ; }
+ 00DC           ; 
+ 00DC           ; // 数据发送
+ 00DC           ; void send_char(unsigned char data )
+ 00DC           ; {
+ 00DC           L3:
+ 00DC                   .dbline 27
+ 00DC           ;      //等待发送缓冲器为空 
+ 00DC           ;      while ( !( UCSR0A & (1<<UDRE0)) );
+ 00DC           L4:
+ 00DC                   .dbline 27
+ 00DC 5D9B              sbis 0xb,5
+ 00DE FECF              rjmp L3
+ 00E0           X0:
+ 00E0                   .dbline 29
+ 00E0           ;      // 将数据放入缓冲器，发送数据 
+ 00E0           ;      UDR0 = data;
+ 00E0 0CB9              out 0xc,R16
+ 00E2                   .dbline -2
+ 00E2           L2:
+ 00E2                   .dbline 0 ; func end
+ 00E2 0895              ret
+ 00E4                   .dbsym r data 16 c
+ 00E4                   .dbend
+ 00E4                   .dbfunc e putchar _putchar$device_specific$ fI
+ 00E4           ;          input -> R16
+                        .even
+ 00E4           _putchar$device_specific$::
+ 00E4                   .dbline -1
+ 00E4                   .dbline 33
+ 00E4           ; }
+ 00E4           ; 
+ 00E4           ; extern int putchar(char input)
+ 00E4           ; {
+ 00E4                   .dbline 34
+ 00E4           ;   if(input== '\n')
+ 00E4 0A30              cpi R16,10
+ 00E6 21F4              brne L13
+ 00E8           X1:
+ 00E8                   .dbline 35
+ 00E8           ;   {  
+ 00E8           L9:
+ 00E8                   .dbline 36
+ 00E8           ;       while(!(UCSR0A & (1<<UDRE0)));
+ 00E8           L10:
+ 00E8                   .dbline 36
+ 00E8 5D9B              sbis 0xb,5
+ 00EA FECF              rjmp L9
+ 00EC           X2:
+ 00EC                   .dbline 37
+ 00EC           ;       UDR0 = '\t';
+ 00EC 89E0              ldi R24,9
+ 00EE 8CB9              out 0xc,R24
+ 00F0                   .dbline 38
+ 00F0           ;   }   
+ 00F0           L12:
+ 00F0                   .dbline 40
+ 00F0           ;    
+ 00F0           ;   while(!(UCSR0A&(1<<UDRE0)));
+ 00F0           L13:
+ 00F0                   .dbline 40
+ 00F0 5D9B              sbis 0xb,5
+ 00F2 FECF              rjmp L12
+ 00F4           X3:
+ 00F4                   .dbline 41
+ 00F4           ;   UDR0=input;
+ 00F4 0CB9              out 0xc,R16
+ 00F6                   .dbline 42
+ 00F6           ;   return 1;
+ 00F6 01E0              ldi R16,1
+ 00F8 10E0              ldi R17,0
+ 00FA                   .dbline -2
+ 00FA           L6:
+ 00FA                   .dbline 0 ; func end
+ 00FA 0895              ret
+ 00FC                   .dbsym r input 16 c
+ 00FC                   .dbend
+ 00FC           ; } 

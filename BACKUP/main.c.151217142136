@@ -1,0 +1,127 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "motor.h"
+#include "usart.h"
+#include "gy_25.h"
+#include "encoder.h"
+#include "pid.h"
+#include "macros.h"
+
+unsigned long countLeft = 0;
+unsigned long countRight = 0;
+unsigned char timerCount = 0;
+INC_PID anglePID;
+float nowAngle;
+float targeAngle = 0;
+float angleInc;
+float angleSum = 0;
+int   outPwm;
+float kp=20, ki=0, kd=0;
+
+int main(void)
+{
+	usart0_init(9600);
+	printf("usart0 init OK!\n");
+	
+	motor_init();
+	printf("motor init OK!\n");
+	
+	gy_25_init();
+	printf("gy_25 init OK!\n");
+	
+	//encoder_init();
+	printf("encoder init OK!\n");
+	
+	delay_ms(500);
+	targeAngle = (float)get_angle()/100;
+	printf("targeAngle :%f\n",targeAngle);
+	
+	Inc_Pid_Config(&anglePID,kp,ki,kd,targeAngle);
+	printf("pid init OK!\n");
+	
+	timer3_init();
+	printf("timer3 init OK!\n");
+	
+	while(1)
+	{
+	  //printf("%f,%f,%f\n",anglePID.kp,anglePID.ki,anglePID.kd);
+	  delay_ms(50);
+	}
+	return 0;
+}
+
+//定时器3中断溢出
+#pragma interrupt_handler timer3_interrupt: 30
+void timer3_interrupt(void) 
+{  
+	 SEI();
+	
+	 nowAngle = (float)get_angle()/100;
+	
+	 angleInc = Inc_Cal(&anglePID, nowAngle);
+	 
+	 angleSum += angleInc;
+	 //printf("%f\n",angleSum);
+	 
+	 //将累计增量转化为pwm输出
+	 motor_A_run(angleSum);
+	 motor_B_run(angleSum);
+
+	 TCNT3=555535;
+	 timerCount++;
+	 if(timerCount == 5)
+	 {
+		 timerCount = 0;
+	 	 countLeft=0;
+	 	 countRight=0;
+	 }
+}
+
+unsigned char pidFlag = 0;
+static unsigned char pid_Buf[11];
+unsigned char i = 0;
+//串口0接收中断
+#pragma interrupt_handler uart_receive:19
+void uart_receive(void)
+{  
+   unsigned char rchar;
+
+   rchar = UDR0;
+   
+   if(rchar == 'E')
+   {
+	  kp = (pid_Buf[0]-'0')*100 + (pid_Buf[1]-'0')*10 + (pid_Buf[2]-'0');
+	  ki = (pid_Buf[4]-'0')*100 + (pid_Buf[5]-'0')*10 + (pid_Buf[6]-'0');
+	  kd = (pid_Buf[8]-'0')*100 + (pid_Buf[9]-'0')*10 + (pid_Buf[10]-'0'); 
+	  
+	  Inc_Pid_Config(&anglePID,kp,ki,kd,targeAngle);
+	  
+	  pidFlag = 0;
+	  i = 0;
+   }
+   
+   if(pidFlag)
+   {
+      pid_Buf[i] = rchar;
+	  i++;
+   }
+   
+   if(rchar == 'S')
+   {
+      pidFlag = 1;
+   }
+}
+
+//外部中断0
+#pragma interrupt_handler INT_T0:2
+void INT_T0(void)
+{  
+	 countLeft++;
+}
+
+//外部中断1 
+#pragma interrupt_handler INT_T1:3
+void INT_T1(void)
+{  
+	 countRight++;
+}

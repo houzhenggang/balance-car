@@ -1,0 +1,89 @@
+#include "pid.h"
+#include <math.h>
+
+void  PID_InitStruture(PID_Struture* pid,double kp,double ki,double kd,double target)
+{
+		pid->kp = kp;
+		pid->ki = ki;
+		pid->kd = kd;
+		pid->target = target;
+		pid->enote[PRESENT] = 0;
+		pid->enote[LAST] = 0;
+		pid->enote[BEFORE] = 0;
+		pid->sumerr = 0;
+#ifdef PID_ADVENCE
+		pid->isv = 0;
+		pid->idv = 0;
+#endif
+}
+
+double PID_devCal(PID_Struture* pid,double fbv)
+{
+	static double olspeed = 0;
+	double temp = pid->enote[BEFORE];
+	pid->enote[BEFORE] = pid->enote[LAST];
+	pid->enote[LAST] = pid->enote[PRESENT];
+	pid->enote[PRESENT] = (fbv - pid->target);
+	if(olspeed<0&&pid->enote[PRESENT]>0)	pid->enote[PRESENT]-=360.0;
+	else if(olspeed>0&&pid->enote[PRESENT]<0) pid->enote[PRESENT]+=360.0;
+	
+	pid->sumerr += pid->enote[PRESENT];
+	return temp;
+}
+
+double PID_Inc(PID_Struture* pid)
+{
+		pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]); 
+		return pid->lastcontrol;
+}
+
+double PID_Nor(PID_Struture* pid)
+{
+		pid->lastcontrol = pid->kp*pid->enote[PRESENT] + pid->ki*pid->sumerr + pid->kd*(pid->enote[PRESENT] - pid->enote[LAST]); 
+		return pid->lastcontrol;
+}
+
+
+#ifdef PID_ADVENCE
+void  PID_SetISV(PID_Struture* pid,double isv)
+{
+		pid->isv = isv;
+}
+
+double PID_Is(PID_Struture* pid)
+{
+		double a = 0.0;
+		if( fabs(pid->enote[PRESENT]) <= pid->isv ) a = 1.0;
+	
+		pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + a*pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]); 
+		return pid->lastcontrol;
+}
+void  PID_SetIDV(PID_Struture* pid,double idv)
+{
+		pid->idv = idv;
+}
+
+double PID_Id(PID_Struture* pid)
+{
+		double du = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]);
+		pid->lastcontrol = pid->idv * pid->lastcontrol + (1-pid->idv)*du;
+		return pid->lastcontrol;
+}
+
+
+double PID_recordOutput(PID_Struture* pid,double output)
+{
+			pid->output[BEFORE] = pid->output[LAST];
+			pid->output[LAST] = pid->output[PRESENT];
+			pid->output[PRESENT] += output;	
+			return pid->output[PRESENT];
+}
+
+double PID_Da(PID_Struture* pid)
+{
+	pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->output[PRESENT] - 2*pid->output[LAST] +pid->output[BEFORE]) - pid->kd*(pid->output[PRESENT] - pid->output[LAST]); 
+	return PID_recordOutput(pid,pid->lastcontrol);
+}
+
+
+#endif

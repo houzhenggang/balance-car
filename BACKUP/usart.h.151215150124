@@ -1,0 +1,13 @@
+#ifndef __USART_H
+#define __USART_H
+
+void usart1_init(void);
+void send_char(unsigned char sendchar);
+void receive_char(void);
+
+void USART0_init(unsigned int band);
+void USART0_transmit( unsigned char data );
+unsigned char USART0_receive( void );
+void io_init(void);
+
+#endif

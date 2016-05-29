@@ -1,0 +1,44 @@
+#include "iom128v.h"
+#include "gy_25.h"
+#include "stdio.h"
+
+void gy_25_init(void)
+{
+ 	//设置帧格式: 8 个数据位, 1个停止位
+	UCSR1C = (1<<UCSZ10)|(1<<UCSZ11); 
+	
+	//U2X=0时的公式计算
+    UBRR1L= (16000000/9600/16-1)%256;
+    UBRR1H= (16000000/9600/16-1)/256;
+	
+	//使能接收中断，使能接收，使能发送
+	UCSR1A = 0x00;
+	UCSR0B = (1<<RXCIE1)|(1<<RXEN1)|(1<<TXEN1);
+}
+
+// 数据发送
+void gy_25_send(unsigned char data )
+{
+     //等待发送缓冲器为空 
+     while ( !( UCSR1A & (1<<UDRE1)) );
+     // 将数据放入缓冲器，发送数据 
+     UDR1 = data;
+}
+
+#pragma interrupt_handler gy_25_receive:31
+void gy_25_receive(void)
+{  
+   unsigned char rchar;
+ 
+   //1-禁止发送和接收
+   UCSR1B=0x00;
+   
+   //2-将接收到的字符缓存在 receivechar中
+   rchar = UDR1;
+   
+   //3-允许发送和接收,接收中断使能
+   UCSR1B =(1<<RXCIE1)|(1<<RXEN1)|(1<<TXEN1);
+   
+   //4-重新发送回上位机
+   printf("%x ",rchar);
+}

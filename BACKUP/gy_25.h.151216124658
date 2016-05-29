@@ -1,0 +1,11 @@
+#ifndef GY_25_H
+#define GY_25_H
+
+void gy_25_init(void);
+void gy_25_send(unsigned char data);
+void gy_25_receive(void);
+void delay_us(unsigned int a);
+void delay_ms(unsigned int a);
+float get_angle(void);
+
+#endif

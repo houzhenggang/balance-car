@@ -1,0 +1,276 @@
+                        .module motor.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile motor.c
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\motor.c
+ 0000                   .dbfunc e motor_io_init _motor_io_init fV
+                        .even
+ 0000           _motor_io_init::
+ 0000                   .dbline -1
+ 0000                   .dbline 8
+ 0000           ; #include "iom128v.h"
+ 0000           ; #include "motor.h"
+ 0000           ; #include "stdio.h"
+ 0000           ; 
+ 0000           ; //电机A：PWM引脚PB5，方向控制引脚PC0，PC1
+ 0000           ; //电机B: PWM引脚PB6，方向控制引脚PC2，PC3
+ 0000           ; void motor_io_init(void)
+ 0000           ; {
+ 0000                   .dbline 10
+ 0000           ;       //PB5,6设置为输出,控制PWM
+ 0000           ;       DDRB |= (0x03<<5);
+ 0000 87B3              in R24,0x17
+ 0002 8066              ori R24,96
+ 0004 87BB              out 0x17,R24
+ 0006                   .dbline 13
+ 0006           ;       
+ 0006           ;       //PC0,1,2,3设置为输出控制方向
+ 0006           ;       DDRC |= (0x0F);
+ 0006 84B3              in R24,0x14
+ 0008 8F60              ori R24,15
+ 000A 84BB              out 0x14,R24
+ 000C                   .dbline 14
+ 000C           ;       PORTC &= ~(0x0F);
+ 000C 85B3              in R24,0x15
+ 000E 807F              andi R24,240
+ 0010 85BB              out 0x15,R24
+ 0012                   .dbline -2
+ 0012           L1:
+ 0012                   .dbline 0 ; func end
+ 0012 0895              ret
+ 0014                   .dbend
+ 0014                   .dbfunc e motor_pwm_init _motor_pwm_init fV
+                        .even
+ 0014           _motor_pwm_init::
+ 0014                   .dbline -1
+ 0014                   .dbline 19
+ 0014           ; }
+ 0014           ; 
+ 0014           ; //电机pwm初始化
+ 0014           ; void motor_pwm_init(void)
+ 0014           ; {
+ 0014                   .dbline 20
+ 0014           ;       OCR1A = 0;
+ 0014 2224              clr R2
+ 0016 3324              clr R3
+ 0018 3BBC              out 0x2b,R3
+ 001A 2ABC              out 0x2a,R2
+ 001C                   .dbline 21
+ 001C           ;       OCR1B = 0;
+ 001C 39BC              out 0x29,R3
+ 001E 28BC              out 0x28,R2
+ 0020                   .dbline 24
+ 0020           ;       
+ 0020           ;       //10位快速pwm
+ 0020           ;       TCCR1A |= (1<<WGM11)|(1<<WGM10);
+ 0020 8FB5              in R24,0x2f
+ 0022 8360              ori R24,3
+ 0024 8FBD              out 0x2f,R24
+ 0026                   .dbline 25
+ 0026           ;       TCCR1B |= (1<<WGM12);
+ 0026 8EB5              in R24,0x2e
+ 0028 8860              ori R24,8
+ 002A 8EBD              out 0x2e,R24
+ 002C                   .dbline 28
+ 002C           ;       
+ 002C           ;       //pwm输出口
+ 002C           ;       TCCR1A |= (1<<COM1A1) | (1<<COM1B1);
+ 002C 8FB5              in R24,0x2f
+ 002E 806A              ori R24,160
+ 0030 8FBD              out 0x2f,R24
+ 0032                   .dbline 30
+ 0032           ;       
+ 0032           ;       TCCR1B |= ((1<<CS11)|(1<<CS10));
+ 0032 8EB5              in R24,0x2e
+ 0034 8360              ori R24,3
+ 0036 8EBD              out 0x2e,R24
+ 0038                   .dbline -2
+ 0038           L2:
+ 0038                   .dbline 0 ; func end
+ 0038 0895              ret
+ 003A                   .dbend
+ 003A                   .dbfunc e motor_init _motor_init fV
+                        .even
+ 003A           _motor_init::
+ 003A                   .dbline -1
+ 003A                   .dbline 34
+ 003A           ; }
+ 003A           ; 
+ 003A           ; void motor_init(void)
+ 003A           ; {
+ 003A                   .dbline 35
+ 003A           ;     motor_io_init();
+ 003A E2DF              xcall _motor_io_init
+ 003C                   .dbline 36
+ 003C           ;       motor_pwm_init();
+ 003C                   .dbline -2
+ 003C           L3:
+ 003C                   .dbline 0 ; func end
+ 003C EBCF              xjmp _motor_pwm_init
+ 003E                   .dbend
+ 003E                   .dbfunc e PWM_Output _PWM_Output fV
+ 003E           ;          PWM_R -> R20,R21
+ 003E           ;          PWM_L -> R22,R23
+                        .even
+ 003E           _PWM_Output::
+ 003E 0E940000          xcall push_xgsetF000
+ 0042 A901              movw R20,R18
+ 0044 B801              movw R22,R16
+ 0046                   .dbline -1
+ 0046                   .dbline 40
+ 0046           ; }
+ 0046           ; 
+ 0046           ; void PWM_Output(int PWM_L,int PWM_R)
+ 0046           ; {
+ 0046                   .dbline 41
+ 0046           ;       if (PWM_L<0)
+ 0046 6030              cpi R22,0
+ 0048 E0E0              ldi R30,0
+ 004A 7E07              cpc R23,R30
+ 004C 5CF4              brge L5
+ 004E           X0:
+ 004E                   .dbline 42
+ 004E           ;       {
+ 004E                   .dbline 43
+ 004E           ;               PORTC &= ~0x03;
+ 004E 85B3              in R24,0x15
+ 0050 8C7F              andi R24,252
+ 0052 85BB              out 0x15,R24
+ 0054                   .dbline 44
+ 0054           ;               PORTC |= 0x01;
+ 0054 A89A              sbi 0x15,0
+ 0056                   .dbline 45
+ 0056           ;               PWM_L *= -1; 
+ 0056 0FEF              ldi R16,-1
+ 0058 1FEF              ldi R17,-1
+ 005A 9B01              movw R18,R22
+ 005C 0E940000          xcall empy16s
+ 0060 B801              movw R22,R16
+ 0062                   .dbline 46
+ 0062           ;       }
+ 0062 04C0              xjmp L6
+ 0064           L5:
+ 0064                   .dbline 48
+ 0064           ;       else
+ 0064           ;       {
+ 0064                   .dbline 49
+ 0064           ;               PORTC &= ~0x03;
+ 0064 85B3              in R24,0x15
+ 0066 8C7F              andi R24,252
+ 0068 85BB              out 0x15,R24
+ 006A                   .dbline 50
+ 006A           ;               PORTC |= 0x02;
+ 006A A99A              sbi 0x15,1
+ 006C                   .dbline 51
+ 006C           ;       }
+ 006C           L6:
+ 006C                   .dbline 53
+ 006C           ;       
+ 006C           ;       if (PWM_L>1000)
+ 006C 88EE              ldi R24,1000
+ 006E 93E0              ldi R25,3
+ 0070 8617              cp R24,R22
+ 0072 9707              cpc R25,R23
+ 0074 14F4              brge L7
+ 0076           X1:
+ 0076                   .dbline 54
+ 0076           ;       {
+ 0076                   .dbline 55
+ 0076           ;               PWM_L=1000;
+ 0076 68EE              ldi R22,1000
+ 0078 73E0              ldi R23,3
+ 007A                   .dbline 56
+ 007A           ;       }
+ 007A           L7:
+ 007A                   .dbline 58
+ 007A           ;       
+ 007A           ;       if (PWM_R<0)
+ 007A 4030              cpi R20,0
+ 007C E0E0              ldi R30,0
+ 007E 5E07              cpc R21,R30
+ 0080 5CF4              brge L9
+ 0082           X2:
+ 0082                   .dbline 59
+ 0082           ;       { 
+ 0082                   .dbline 60
+ 0082           ;               PORTC &= ~0x0C;
+ 0082 85B3              in R24,0x15
+ 0084 837F              andi R24,243
+ 0086 85BB              out 0x15,R24
+ 0088                   .dbline 61
+ 0088           ;               PORTC |= 0x04;
+ 0088 AA9A              sbi 0x15,2
+ 008A                   .dbline 62
+ 008A           ;               PWM_R *= -1;
+ 008A 0FEF              ldi R16,-1
+ 008C 1FEF              ldi R17,-1
+ 008E 9A01              movw R18,R20
+ 0090 0E940000          xcall empy16s
+ 0094 A801              movw R20,R16
+ 0096                   .dbline 63
+ 0096           ;       }
+ 0096 04C0              xjmp L10
+ 0098           L9:
+ 0098                   .dbline 65
+ 0098           ;       else
+ 0098           ;       {
+ 0098                   .dbline 66
+ 0098           ;               PORTC &= ~0x0C;
+ 0098 85B3              in R24,0x15
+ 009A 837F              andi R24,243
+ 009C 85BB              out 0x15,R24
+ 009E                   .dbline 67
+ 009E           ;               PORTC |= 0x08;
+ 009E AB9A              sbi 0x15,3
+ 00A0                   .dbline 68
+ 00A0           ;       }
+ 00A0           L10:
+ 00A0                   .dbline 70
+ 00A0           ;       
+ 00A0           ;       if (PWM_R>1000)
+ 00A0 88EE              ldi R24,1000
+ 00A2 93E0              ldi R25,3
+ 00A4 8417              cp R24,R20
+ 00A6 9507              cpc R25,R21
+ 00A8 14F4              brge L11
+ 00AA           X3:
+ 00AA                   .dbline 71
+ 00AA           ;       {
+ 00AA                   .dbline 72
+ 00AA           ;               PWM_R=1000;
+ 00AA 48EE              ldi R20,1000
+ 00AC 53E0              ldi R21,3
+ 00AE                   .dbline 73
+ 00AE           ;       }
+ 00AE           L11:
+ 00AE                   .dbline 75
+ 00AE           ;       
+ 00AE           ;       OCR1AH=(PWM_L>>8);
+ 00AE 1B01              movw R2,R22
+ 00B0 232C              mov R2,R3
+ 00B2 3324              clr R3
+ 00B4 27FC              sbrc R2,7
+ 00B6 3094              com R3
+ 00B8 2BBC              out 0x2b,R2
+ 00BA                   .dbline 76
+ 00BA           ;       OCR1AL=PWM_L;                   
+ 00BA 6ABD              out 0x2a,R22
+ 00BC                   .dbline 78
+ 00BC           ;       
+ 00BC           ;       OCR1BH=(PWM_R>>8);
+ 00BC 1A01              movw R2,R20
+ 00BE 232C              mov R2,R3
+ 00C0 3324              clr R3
+ 00C2 27FC              sbrc R2,7
+ 00C4 3094              com R3
+ 00C6 29BC              out 0x29,R2
+ 00C8                   .dbline 79
+ 00C8           ;       OCR1BL=PWM_R;                                   
+ 00C8 48BD              out 0x28,R20
+ 00CA                   .dbline -2
+ 00CA           L4:
+ 00CA                   .dbline 0 ; func end
+ 00CA 0C940000          xjmp pop_xgsetF000
+ 00CE                   .dbsym r PWM_R 20 I
+ 00CE                   .dbsym r PWM_L 22 I
+ 00CE                   .dbend
+ 00CE           ; }

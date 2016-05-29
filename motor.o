@@ -1,0 +1,112 @@
+XL
+H 1 areas 7 global symbols
+M motor.c
+S push_xgsetF000 Ref0000
+S empy16s Ref0000
+S pop_xgsetF000 Ref0000
+A text size CE flags 0
+dbfile motor.c
+dbfile E:\大学课程\平衡小车设计\平衡小车程序final\motor.c
+dbfunc e motor_io_init 0 fV
+dbline FFFFFFFF 0
+dbline 8 0
+dbline A 0
+dbline D 6
+dbline E C
+dbline FFFFFFFE 12
+dbline 0 12
+dbfunc e motor_pwm_init 14 fV
+dbline FFFFFFFF 14
+dbline 13 14
+dbline 14 14
+dbline 15 1C
+dbline 18 20
+dbline 19 26
+dbline 1C 2C
+dbline 1E 32
+dbline FFFFFFFE 38
+dbline 0 38
+dbfunc e motor_init 3A fV
+dbline FFFFFFFF 3A
+dbline 22 3A
+dbline 23 3A
+dbline 24 3C
+dbline FFFFFFFE 3C
+dbline 0 3C
+dbfunc e PWM_Output 3E fV
+dbsym r PWM_R 14 I
+dbsym r PWM_L 16 I
+dbline FFFFFFFF 46
+dbline 28 46
+dbline 29 46
+dbline 2A 4E
+dbline 2B 4E
+dbline 2C 54
+dbline 2D 56
+dbline 2E 62
+dbline 30 64
+dbline 31 64
+dbline 32 6A
+dbline 33 6C
+dbline 35 6C
+dbline 36 76
+dbline 37 76
+dbline 38 7A
+dbline 3A 7A
+dbline 3B 82
+dbline 3C 82
+dbline 3D 88
+dbline 3E 8A
+dbline 3F 96
+dbline 41 98
+dbline 42 98
+dbline 43 9E
+dbline 44 A0
+dbline 46 A0
+dbline 47 AA
+dbline 48 AA
+dbline 49 AE
+dbline 4B AE
+dbline 4C BA
+dbline 4E BC
+dbline 4F C8
+dbline FFFFFFFE CA
+dbline 0 CA
+S _PWM_Output Def003E
+S _motor_pwm_init Def0014
+S _motor_init Def003A
+S _motor_io_init Def0000
+T 00 00 87 B3 80 66 87 BB 84 B3 8F 60 84 BB 85 B3
+R 00 00 00 00
+T 0E 00 80 7F 85 BB 08 95
+R 00 00 00 00
+T 14 00 22 24 33 24 3B BC 2A BC 39 BC 28 BC 8F B5
+R 00 00 00 00
+T 22 00 83 60 8F BD 8E B5 88 60 8E BD 8F B5 80 6A
+R 00 00 00 00
+T 30 00 8F BD 8E B5 83 60 8E BD 08 95
+R 00 00 00 00
+T 3A 00 E2 DF EB CF
+R 00 00 00 00
+T 3E 00 0E 94 00 00 A9 01 B8 01 60 30 E0 E0 7E 07
+R 00 00 00 00 12 04 00 00
+T 4C 00 5C F4 85 B3 8C 7F 85 BB A8 9A 0F EF 1F EF
+R 00 00 00 00
+T 5A 00 9B 01 0E 94 00 00 B8 01 04 C0 85 B3 8C 7F
+R 00 00 00 00 12 06 01 00
+T 68 00 85 BB A9 9A 88 EE 93 E0 86 17 97 07 14 F4
+R 00 00 00 00
+T 76 00 68 EE 73 E0 40 30 E0 E0 5E 07 5C F4 85 B3
+R 00 00 00 00
+T 84 00 83 7F 85 BB AA 9A 0F EF 1F EF 9A 01
+R 00 00 00 00
+T 90 00 0E 94 00 00 A8 01 04 C0 85 B3 83 7F 85 BB
+R 00 00 00 00 12 04 01 00
+T 9E 00 AB 9A 88 EE 93 E0 84 17 95 07 14 F4 48 EE
+R 00 00 00 00
+T AC 00 53 E0 1B 01 23 2C 33 24 27 FC 30 94 2B BC
+R 00 00 00 00
+T BA 00 6A BD 1A 01 23 2C 33 24 27 FC 30 94 29 BC
+R 00 00 00 00
+T C8 00 48 BD 0C 94 00 00
+R 00 00 00 00 12 06 02 00

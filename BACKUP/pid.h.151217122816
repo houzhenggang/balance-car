@@ -1,0 +1,16 @@
+#ifndef PID_H
+#define PID_H
+
+typedef struct 
+{
+	int angle_Enote[3];
+ 	int angle_P; 
+	int angle_I;
+	int angle_D;
+	int angle_Target;
+}ANGLE_PID;
+
+void PID_InitStruture(ANGLE_PID* pid,int kp,int ki,int kd,int target);
+int angle_pid(ANGLE_PID* pid, int angle);
+
+#endif

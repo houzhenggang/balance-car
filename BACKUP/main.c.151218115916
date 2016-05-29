@@ -1,0 +1,95 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "macros.h"
+#include "motor.h"
+#include "usart.h"
+#include "encoder.h"
+#include "mpu6050.h"
+#include "i2c.h"
+
+unsigned long countLeft = 0;
+unsigned long countRight = 0;
+unsigned char timerCount = 0;
+extern float Roll;
+extern float ay, gx;
+int L_pwm,R_pwm;
+float PWM;
+float angle;
+float angle_dot;
+float K_angle = 18;
+float K_angle_dot = 0.5;
+
+int main(void)
+{
+	delay_ms(500);
+	
+	usart0_init(9600);
+	printf("\tusart0 init OK!\n");
+	
+	motor_init();
+	
+	encoder_init();
+	
+	MPU6050_Config();
+	
+	timer3_init();
+	
+	while(1)
+	{
+	    Get_Data();
+		delay_ms(50);
+	}
+	
+	return 0;
+}
+
+//定时器3中断溢出
+#pragma interrupt_handler timer3_interrupt: 30
+void timer3_interrupt(void) 
+{  
+	 SEI();
+	 
+	 Get_Data();
+	 
+	 angle = Roll;
+	 angel_dot = gx;
+	 
+	 PWM = K_angle*angle + K_angle_dot*angle_dot;
+	 
+	 L_pwm = (int)PWM;
+	 R_pwm = (int)PWM;
+	 
+	 PWM_output(L_pwm, R_pwm);
+	 
+	 TCNT3=555535;
+	 timerCount++; 
+	 if(timerCount == 5)
+	 {
+		 timerCount = 0;
+	 	 countLeft=0;
+	 	 countRight=0;
+	 }
+}
+
+//串口0接收中断
+#pragma interrupt_handler uart_receive:19
+void uart_receive(void)
+{  
+   unsigned char rchar;
+
+   rchar = UDR0;
+}
+
+//外部中断0
+#pragma interrupt_handler INT_T0:2
+void INT_T0(void)
+{  
+	 countLeft++;
+}
+
+//外部中断1 
+#pragma interrupt_handler INT_T1:3
+void INT_T1(void)
+{  
+	 countRight++;
+}

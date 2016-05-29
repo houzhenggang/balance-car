@@ -1,0 +1,45 @@
+#include "iom128v.h"
+#include "encoder.h"
+
+int speed_L = 0;
+int speed_R = 0;
+int speed_R_L;
+
+//编码器初始化
+void encoder_init(void)
+{
+ 	DDRD &= ~0x03;
+	DDRG &= ~((0x01<<3)|(0x01<<4));
+	PORTG |= (0x01<<3)|(0x01<<4);
+	EIMSK |= (1<<INT0) | (1<<INT1);
+	EICRA &= 0xF0;
+	EICRA |= (1<<ISC01) | (1<<ISC11);
+}
+
+void Get_Speed(int *speed, int *distance)
+{  
+	speed_R_L = (speed_L + speed_R)/2;
+	
+	speed_L = 0;
+	speed_R = 0;
+}
+
+//外部中断0
+#pragma interrupt_handler INT_T0:2
+void INT_T0(void)
+{  
+	if(PING & (0x01<<3))
+		speed_L--;
+	else
+		speed_L++;
+}
+
+//外部中断1 
+#pragma interrupt_handler INT_T1:3
+void INT_T1(void)
+{  
+	if(PING & (0x01<<4))
+	    speed_R--;
+	else
+		speed_R++;
+}

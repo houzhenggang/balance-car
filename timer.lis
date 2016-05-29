@@ -1,0 +1,42 @@
+                        .module timer.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile timer.c
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\timer.c
+ 0000                   .dbfunc e timer3_init _timer3_init fV
+                        .even
+ 0000           _timer3_init::
+ 0000                   .dbline -1
+ 0000                   .dbline 8
+ 0000           ; #include "iom128v.h"
+ 0000           ; #include "timer.h"
+ 0000           ; 
+ 0000           ; //T3定时器初始化，用于定时
+ 0000           ; //1分频,最大计时时间65535*(1/16000000)*1000 = 4.0959375ms
+ 0000           ; //则定时1ms计数值为 65535*((4.0959375-1)/4.0959375) = 49535
+ 0000           ; void timer3_init(void)
+ 0000           ; {
+ 0000                   .dbline 9
+ 0000           ;        TCCR3A=0X00;
+ 0000 2224              clr R2
+ 0002 20928B00          sts 139,R2
+ 0006                   .dbline 10
+ 0006           ;        TCCR3B=(1<<CS30);
+ 0006 81E0              ldi R24,1
+ 0008 80938A00          sts 138,R24
+ 000C                   .dbline 11
+ 000C           ;        TCNT3=49535;
+ 000C 8FE7              ldi R24,49535
+ 000E 91EC              ldi R25,193
+ 0010 90938900          sts 136+1,R25
+ 0014 80938800          sts 136,R24
+ 0018                   .dbline 12
+ 0018           ;        ETIMSK|=(1<<TOIE3);
+ 0018 80917D00          lds R24,125
+ 001C 8460              ori R24,4
+ 001E 80937D00          sts 125,R24
+ 0022                   .dbline -2
+ 0022           L1:
+ 0022                   .dbline 0 ; func end
+ 0022 0895              ret
+ 0024                   .dbend
+ 0024           ; }

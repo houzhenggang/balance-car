@@ -1,0 +1,1302 @@
+                        .module mpu6050.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile mpu6050.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile mpu6050.c
+ 0000           _gyro_orientation::
+ 0000                   .blkb 2
+                        .area idata
+ 0000 FF00              .byte 255,0
+                        .area data(ram, con, rel)
+ 0002                   .dbfile mpu6050.c
+ 0002                   .blkb 2
+                        .area idata
+ 0002 0000              .byte 0,0
+                        .area data(ram, con, rel)
+ 0004                   .dbfile mpu6050.c
+ 0004                   .blkb 2
+                        .area idata
+ 0004 FF00              .byte 255,0
+                        .area data(ram, con, rel)
+ 0006                   .dbfile mpu6050.c
+ 0006                   .blkb 2
+                        .area idata
+ 0006 0000              .byte 0,0
+                        .area data(ram, con, rel)
+ 0008                   .dbfile mpu6050.c
+ 0008                   .blkb 1
+                        .area idata
+ 0008 01                .byte 1
+                        .area data(ram, con, rel)
+ 0009                   .dbfile mpu6050.c
+ 0009                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0009                   .dbsym e gyro_orientation _gyro_orientation A[9:9]C
+ 0009           _hal::
+ 0009                   .blkb 1
+                        .area idata
+ 0009 00                .byte 0
+                        .area data(ram, con, rel)
+ 000A                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 000A                   .blkb 12
+                        .area idata
+ 000A 00000000000000000000      .word 0,0,0,0,0
+ 0014 0000              .byte 0,0
+                        .area data(ram, con, rel)
+ 0016                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0016                   .dbstruct 0 4 rx_s
+ 0016                   .dbfield 0 header A[3:3]c
+ 0016                   .dbfield 3 cmd c
+ 0016                   .dbend
+ 0016                   .dbstruct 0 13 hal_s
+ 0016                   .dbfield 0 sensors c
+ 0016                   .dbfield 1 dmp_on c
+ 0016                   .dbfield 2 wait_for_tap c
+ 0016                   .dbfield 3 new_gyro c
+ 0016                   .dbfield 4 report s
+ 0016                   .dbfield 6 dmp_features s
+ 0016                   .dbfield 8 motion_int_mode c
+ 0016                   .dbfield 9 rx S[rx_s]
+ 0016                   .dbend
+ 0016                   .dbsym e hal _hal S[hal_s]
+                        .area text(rom, con, rel)
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0000                   .dbfunc e inv_row_2_scale _inv_row_2_scale fs
+ 0000           ;              b -> R20,R21
+ 0000           ;            row -> R16,R17
+                        .even
+ 0000           _inv_row_2_scale::
+ 0000 4A93              st -y,R20
+ 0002 5A93              st -y,R21
+ 0004                   .dbline -1
+ 0004                   .dbline 47
+ 0004           ; #include "mpu6050.h"
+ 0004           ; #include "inv_mpu_dmp_motion_driver.h"
+ 0004           ; #include "inv_mpu.h"
+ 0004           ; #include "stdio.h"
+ 0004           ; #include "i2c.h"
+ 0004           ; #include "math.h"
+ 0004           ; #include "upload.h"
+ 0004           ; 
+ 0004           ; #define q30  1073741824.0f
+ 0004           ; 
+ 0004           ; signed char gyro_orientation[9] = {-1, 0, 0,0,-1, 0,0, 0, 1};
+ 0004           ; short gyro[3], accel[3],sensors;      
+ 0004           ; 
+ 0004           ; struct rx_s 
+ 0004           ; {
+ 0004           ;     unsigned char header[3];
+ 0004           ;     unsigned char cmd;
+ 0004           ; };
+ 0004           ; struct hal_s 
+ 0004           ; {
+ 0004           ;     unsigned char sensors;
+ 0004           ;     unsigned char dmp_on;
+ 0004           ;     unsigned char wait_for_tap;
+ 0004           ;     volatile unsigned char new_gyro;
+ 0004           ;     unsigned short report;
+ 0004           ;     unsigned short dmp_features;
+ 0004           ;     unsigned char motion_int_mode;
+ 0004           ;     struct rx_s rx;
+ 0004           ; };
+ 0004           ; 
+ 0004           ; struct hal_s hal = {0};
+ 0004           ; 
+ 0004           ; volatile unsigned char rx_new;
+ 0004           ; 
+ 0004           ; enum packet_type_e 
+ 0004           ; {
+ 0004           ;     PACKET_TYPE_ACCEL,
+ 0004           ;     PACKET_TYPE_GYRO,
+ 0004           ;     PACKET_TYPE_QUAT,
+ 0004           ;     PACKET_TYPE_TAP,
+ 0004           ;     PACKET_TYPE_ANDROID_ORIENT,
+ 0004           ;     PACKET_TYPE_PEDO,
+ 0004           ;     PACKET_TYPE_MISC
+ 0004           ; };
+ 0004           ; 
+ 0004           ; unsigned short inv_row_2_scale(const signed char *row)
+ 0004           ; {
+ 0004                   .dbline 50
+ 0004           ;     unsigned short b;
+ 0004           ; 
+ 0004           ;     if (row[0] > 0)
+ 0004 2224              clr R2
+ 0006 F801              movw R30,R16
+ 0008 3080              ldd R3,z+0
+ 000A 2314              cp R2,R3
+ 000C 1CF4              brge L2
+ 000E           X0:
+ 000E                   .dbline 51
+ 000E           ;         b = 0;
+ 000E 4427              clr R20
+ 0010 5527              clr R21
+ 0012 27C0              xjmp L3
+ 0014           L2:
+ 0014                   .dbline 52
+ 0014           ;     else if (row[0] < 0)
+ 0014 F801              movw R30,R16
+ 0016 8081              ldd R24,z+0
+ 0018 8030              cpi R24,0
+ 001A 1CF4              brge L4
+ 001C           X1:
+ 001C                   .dbline 53
+ 001C           ;         b = 4;
+ 001C 44E0              ldi R20,4
+ 001E 50E0              ldi R21,0
+ 0020 20C0              xjmp L5
+ 0022           L4:
+ 0022                   .dbline 54
+ 0022           ;     else if (row[1] > 0)
+ 0022 2224              clr R2
+ 0024 F801              movw R30,R16
+ 0026 3180              ldd R3,z+1
+ 0028 2314              cp R2,R3
+ 002A 1CF4              brge L6
+ 002C           X2:
+ 002C                   .dbline 55
+ 002C           ;         b = 1;
+ 002C 41E0              ldi R20,1
+ 002E 50E0              ldi R21,0
+ 0030 18C0              xjmp L7
+ 0032           L6:
+ 0032                   .dbline 56
+ 0032           ;     else if (row[1] < 0)
+ 0032 F801              movw R30,R16
+ 0034 8181              ldd R24,z+1
+ 0036 8030              cpi R24,0
+ 0038 1CF4              brge L8
+ 003A           X3:
+ 003A                   .dbline 57
+ 003A           ;         b = 5;
+ 003A 45E0              ldi R20,5
+ 003C 50E0              ldi R21,0
+ 003E 11C0              xjmp L9
+ 0040           L8:
+ 0040                   .dbline 58
+ 0040           ;     else if (row[2] > 0)
+ 0040 2224              clr R2
+ 0042 F801              movw R30,R16
+ 0044 3280              ldd R3,z+2
+ 0046 2314              cp R2,R3
+ 0048 1CF4              brge L10
+ 004A           X4:
+ 004A                   .dbline 59
+ 004A           ;         b = 2;
+ 004A 42E0              ldi R20,2
+ 004C 50E0              ldi R21,0
+ 004E 09C0              xjmp L11
+ 0050           L10:
+ 0050                   .dbline 60
+ 0050           ;     else if (row[2] < 0)
+ 0050 F801              movw R30,R16
+ 0052 8281              ldd R24,z+2
+ 0054 8030              cpi R24,0
+ 0056 1CF4              brge L12
+ 0058           X5:
+ 0058                   .dbline 61
+ 0058           ;         b = 6;
+ 0058 46E0              ldi R20,6
+ 005A 50E0              ldi R21,0
+ 005C 02C0              xjmp L13
+ 005E           L12:
+ 005E                   .dbline 63
+ 005E           ;     else
+ 005E           ;         b = 7;     
+ 005E 47E0              ldi R20,7
+ 0060 50E0              ldi R21,0
+ 0062           L13:
+ 0062           L11:
+ 0062           L9:
+ 0062           L7:
+ 0062           L5:
+ 0062           L3:
+ 0062                   .dbline 64
+ 0062           ;     return b;
+ 0062 8A01              movw R16,R20
+ 0064                   .dbline -2
+ 0064           L1:
+ 0064                   .dbline 0 ; func end
+ 0064 5991              ld R21,y+
+ 0066 4991              ld R20,y+
+ 0068 0895              ret
+ 006A                   .dbsym r b 20 s
+ 006A                   .dbsym r row 16 pC
+ 006A                   .dbend
+ 006A                   .dbfunc e inv_orientation_matrix_to_scalar _inv_orientation_matrix_to_scalar fs
+ 006A           ;         scalar -> R10,R11
+ 006A           ;            mtx -> R20,R21
+                        .even
+ 006A           _inv_orientation_matrix_to_scalar::
+ 006A 0E940000          xcall push_xgset303C
+ 006E A801              movw R20,R16
+ 0070                   .dbline -1
+ 0070                   .dbline 68
+ 0070           ; }
+ 0070           ; 
+ 0070           ; unsigned short inv_orientation_matrix_to_scalar(const signed char *mtx)
+ 0070           ; {
+ 0070                   .dbline 71
+ 0070           ;     unsigned short scalar;
+ 0070           ; 
+ 0070           ;     scalar = inv_row_2_scale(mtx);
+ 0070 8A01              movw R16,R20
+ 0072 C6DF              xcall _inv_row_2_scale
+ 0074 5801              movw R10,R16
+ 0076                   .dbline 72
+ 0076           ;     scalar |= inv_row_2_scale(mtx + 3) << 3;
+ 0076 8A01              movw R16,R20
+ 0078 0D5F              subi R16,253  ; offset = 3
+ 007A 1F4F              sbci R17,255
+ 007C C1DF              xcall _inv_row_2_scale
+ 007E 1801              movw R2,R16
+ 0080 220C              lsl R2
+ 0082 331C              rol R3
+ 0084 220C              lsl R2
+ 0086 331C              rol R3
+ 0088 220C              lsl R2
+ 008A 331C              rol R3
+ 008C A228              or R10,R2
+ 008E B328              or R11,R3
+ 0090                   .dbline 73
+ 0090           ;     scalar |= inv_row_2_scale(mtx + 6) << 6;
+ 0090 8A01              movw R16,R20
+ 0092 0A5F              subi R16,250  ; offset = 6
+ 0094 1F4F              sbci R17,255
+ 0096 B4DF              xcall _inv_row_2_scale
+ 0098 6801              movw R12,R16
+ 009A 26E0              ldi R18,6
+ 009C 30E0              ldi R19,0
+ 009E 0E940000          xcall lsl16
+ 00A2 A02A              or R10,R16
+ 00A4 B12A              or R11,R17
+ 00A6                   .dbline 76
+ 00A6           ; 
+ 00A6           ; 
+ 00A6           ;     return scalar;
+ 00A6 8501              movw R16,R10
+ 00A8                   .dbline -2
+ 00A8           L14:
+ 00A8                   .dbline 0 ; func end
+ 00A8 0C940000          xjmp pop_xgset303C
+ 00AC                   .dbsym r scalar 10 s
+ 00AC                   .dbsym r mtx 20 pC
+ 00AC                   .dbend
+ 00AC                   .dbfunc e run_self_test _run_self_test fV
+ 00AC           ;     accel_sens -> y+28
+ 00AC           ;           sens -> y+24
+ 00AC           ;         result -> R20,R21
+ 00AC           ;          accel -> y+12
+ 00AC           ;           gyro -> y+0
+                        .even
+ 00AC           _run_self_test::
+ 00AC 4A93              st -y,R20
+ 00AE 5A93              st -y,R21
+ 00B0 6E97              sbiw R28,30
+ 00B2                   .dbline -1
+ 00B2                   .dbline 80
+ 00B2           ; }
+ 00B2           ; 
+ 00B2           ; void run_self_test(void)
+ 00B2           ; {
+ 00B2                   .dbline 84
+ 00B2           ;     int result;
+ 00B2           ;     long gyro[3], accel[3];
+ 00B2           ;       
+ 00B2           ;     result = mpu_run_self_test(gyro, accel);
+ 00B2 9E01              movw R18,R28
+ 00B4 245F              subi R18,244  ; offset = 12
+ 00B6 3F4F              sbci R19,255
+ 00B8 8E01              movw R16,R28
+ 00BA 0E940000          xcall _mpu_run_self_test
+ 00BE A801              movw R20,R16
+ 00C0                   .dbline 86
+ 00C0           ; 
+ 00C0           ;     if (result == 0x03) 
+ 00C0 0330              cpi R16,3
+ 00C2 E0E0              ldi R30,0
+ 00C4 1E07              cpc R17,R30
+ 00C6 09F0              breq X7
+ 00C8 7EC0              xjmp L16
+ 00CA           X7:
+ 00CA           X6:
+ 00CA                   .dbline 87
+ 00CA           ;       {
+ 00CA                   .dbline 90
+ 00CA           ;         float sens;
+ 00CA           ;         unsigned short accel_sens;
+ 00CA           ;         mpu_get_gyro_sens(&sens);
+ 00CA 8E01              movw R16,R28
+ 00CC 085E              subi R16,232  ; offset = 24
+ 00CE 1F4F              sbci R17,255
+ 00D0 0E940000          xcall _mpu_get_gyro_sens
+ 00D4                   .dbline 91
+ 00D4           ;         gyro[0] = (long)(gyro[0] * sens);
+ 00D4 0881              ldd R16,y+0
+ 00D6 1981              ldd R17,y+1
+ 00D8 2A81              ldd R18,y+2
+ 00DA 3B81              ldd R19,y+3
+ 00DC 0E940000          xcall long2fp
+ 00E0 CE01              movw R24,R28
+ 00E2 4896              adiw R24,24
+ 00E4 9A93              st -y,R25
+ 00E6 8A93              st -y,R24
+ 00E8 0E940000          xcall fpmule1
+ 00EC 0E940000          xcall fpint
+ 00F0 0883              std y+0,R16
+ 00F2 1983              std y+1,R17
+ 00F4 2A83              std y+2,R18
+ 00F6 3B83              std y+3,R19
+ 00F8                   .dbline 92
+ 00F8           ;         gyro[1] = (long)(gyro[1] * sens);
+ 00F8 0C81              ldd R16,y+4
+ 00FA 1D81              ldd R17,y+5
+ 00FC 2E81              ldd R18,y+6
+ 00FE 3F81              ldd R19,y+7
+ 0100 0E940000          xcall long2fp
+ 0104 CE01              movw R24,R28
+ 0106 4896              adiw R24,24
+ 0108 9A93              st -y,R25
+ 010A 8A93              st -y,R24
+ 010C 0E940000          xcall fpmule1
+ 0110 0E940000          xcall fpint
+ 0114 0C83              std y+4,R16
+ 0116 1D83              std y+5,R17
+ 0118 2E83              std y+6,R18
+ 011A 3F83              std y+7,R19
+ 011C                   .dbline 93
+ 011C           ;         gyro[2] = (long)(gyro[2] * sens);
+ 011C 0885              ldd R16,y+8
+ 011E 1985              ldd R17,y+9
+ 0120 2A85              ldd R18,y+10
+ 0122 3B85              ldd R19,y+11
+ 0124 0E940000          xcall long2fp
+ 0128 CE01              movw R24,R28
+ 012A 4896              adiw R24,24
+ 012C 9A93              st -y,R25
+ 012E 8A93              st -y,R24
+ 0130 0E940000          xcall fpmule1
+ 0134 0E940000          xcall fpint
+ 0138 0887              std y+8,R16
+ 013A 1987              std y+9,R17
+ 013C 2A87              std y+10,R18
+ 013E 3B87              std y+11,R19
+ 0140                   .dbline 94
+ 0140           ;         dmp_set_gyro_bias(gyro);
+ 0140 8E01              movw R16,R28
+ 0142 0E940000          xcall _dmp_set_gyro_bias
+ 0146                   .dbline 95
+ 0146           ;         mpu_get_accel_sens(&accel_sens);
+ 0146 8E01              movw R16,R28
+ 0148 045E              subi R16,228  ; offset = 28
+ 014A 1F4F              sbci R17,255
+ 014C 0E940000          xcall _mpu_get_accel_sens
+ 0150                   .dbline 96
+ 0150           ;         accel[0] *= accel_sens;
+ 0150 2C8C              ldd R2,y+28
+ 0152 3D8C              ldd R3,y+29
+ 0154 4424              clr R4
+ 0156 5524              clr R5
+ 0158 0C85              ldd R16,y+12
+ 015A 1D85              ldd R17,y+13
+ 015C 2E85              ldd R18,y+14
+ 015E 3F85              ldd R19,y+15
+ 0160 5A92              st -y,R5
+ 0162 4A92              st -y,R4
+ 0164 3A92              st -y,R3
+ 0166 2A92              st -y,R2
+ 0168 0E940000          xcall empy32s
+ 016C 0C87              std y+12,R16
+ 016E 1D87              std y+13,R17
+ 0170 2E87              std y+14,R18
+ 0172 3F87              std y+15,R19
+ 0174                   .dbline 97
+ 0174           ;         accel[1] *= accel_sens;
+ 0174 2C8C              ldd R2,y+28
+ 0176 3D8C              ldd R3,y+29
+ 0178 4424              clr R4
+ 017A 5524              clr R5
+ 017C 0889              ldd R16,y+16
+ 017E 1989              ldd R17,y+17
+ 0180 2A89              ldd R18,y+18
+ 0182 3B89              ldd R19,y+19
+ 0184 5A92              st -y,R5
+ 0186 4A92              st -y,R4
+ 0188 3A92              st -y,R3
+ 018A 2A92              st -y,R2
+ 018C 0E940000          xcall empy32s
+ 0190 088B              std y+16,R16
+ 0192 198B              std y+17,R17
+ 0194 2A8B              std y+18,R18
+ 0196 3B8B              std y+19,R19
+ 0198                   .dbline 98
+ 0198           ;         accel[2] *= accel_sens;
+ 0198 2C8C              ldd R2,y+28
+ 019A 3D8C              ldd R3,y+29
+ 019C 4424              clr R4
+ 019E 5524              clr R5
+ 01A0 0C89              ldd R16,y+20
+ 01A2 1D89              ldd R17,y+21
+ 01A4 2E89              ldd R18,y+22
+ 01A6 3F89              ldd R19,y+23
+ 01A8 5A92              st -y,R5
+ 01AA 4A92              st -y,R4
+ 01AC 3A92              st -y,R3
+ 01AE 2A92              st -y,R2
+ 01B0 0E940000          xcall empy32s
+ 01B4 0C8B              std y+20,R16
+ 01B6 1D8B              std y+21,R17
+ 01B8 2E8B              std y+22,R18
+ 01BA 3F8B              std y+23,R19
+ 01BC                   .dbline 99
+ 01BC           ;         dmp_set_accel_bias(accel);            
+ 01BC 8E01              movw R16,R28
+ 01BE 045F              subi R16,244  ; offset = 12
+ 01C0 1F4F              sbci R17,255
+ 01C2 0E940000          xcall _dmp_set_accel_bias
+ 01C6                   .dbline 100
+ 01C6           ;     }
+ 01C6           L16:
+ 01C6                   .dbline -2
+ 01C6           L15:
+ 01C6                   .dbline 0 ; func end
+ 01C6 6E96              adiw R28,30
+ 01C8 5991              ld R21,y+
+ 01CA 4991              ld R20,y+
+ 01CC 0895              ret
+ 01CE                   .dbsym l accel_sens 28 s
+ 01CE                   .dbsym l sens 24 D
+ 01CE                   .dbsym r result 20 I
+ 01CE                   .dbsym l accel 12 A[12:3]L
+ 01CE                   .dbsym l gyro 0 A[12:3]L
+ 01CE                   .dbend
+ 01CE                   .dbfunc e MPU6050_Config _MPU6050_Config fV
+ 01CE           ;         result -> R10,R11
+                        .even
+ 01CE           _MPU6050_Config::
+ 01CE AA92              st -y,R10
+ 01D0 BA92              st -y,R11
+ 01D2                   .dbline -1
+ 01D2                   .dbline 104
+ 01D2           ;  }
+ 01D2           ; 
+ 01D2           ; void MPU6050_Config(void)
+ 01D2           ; {
+ 01D2                   .dbline 106
+ 01D2           ;       int result; 
+ 01D2           ;       I2C_Config();
+ 01D2 0E940000          xcall _I2C_Config
+ 01D6                   .dbline 107
+ 01D6           ;       result = mpu_init();
+ 01D6 0E940000          xcall _mpu_init
+ 01DA 5801              movw R10,R16
+ 01DC                   .dbline 108
+ 01DC           ;       if(!result)
+ 01DC 0030              cpi R16,0
+ 01DE 0107              cpc R16,R17
+ 01E0 09F0              breq X17
+ 01E2 8CC0              xjmp L25
+ 01E4           X17:
+ 01E4           X8:
+ 01E4                   .dbline 109
+ 01E4           ;       {
+ 01E4                   .dbline 110
+ 01E4           ;         printf("\t\tDMP初始化.....\n\n ");
+ 01E4 00E0              ldi R16,<L27
+ 01E6 10E0              ldi R17,>L27
+ 01E8 0E940000          xcall _printf
+ 01EC                   .dbline 113
+ 01EC           ;         
+ 01EC           ;         //mpu_set_sensor
+ 01EC           ;         if(!mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL))
+ 01EC 08E7              ldi R16,120
+ 01EE 0E940000          xcall _mpu_set_sensors
+ 01F2 0030              cpi R16,0
+ 01F4 0107              cpc R16,R17
+ 01F6 29F4              brne L28
+ 01F8           X9:
+ 01F8                   .dbline 114
+ 01F8           ;         {
+ 01F8                   .dbline 115
+ 01F8           ;                printf("\t传感器设定成功 ......\n\n");
+ 01F8 00E0              ldi R16,<L30
+ 01FA 10E0              ldi R17,>L30
+ 01FC 0E940000          xcall _printf
+ 0200                   .dbline 116
+ 0200           ;         }
+ 0200 04C0              xjmp L29
+ 0202           L28:
+ 0202                   .dbline 118
+ 0202           ;         else
+ 0202           ;         {
+ 0202                   .dbline 119
+ 0202           ;                printf("\t传感器设定失败 ......\n\n");
+ 0202 00E0              ldi R16,<L31
+ 0204 10E0              ldi R17,>L31
+ 0206 0E940000          xcall _printf
+ 020A                   .dbline 120
+ 020A           ;         }
+ 020A           L29:
+ 020A                   .dbline 123
+ 020A           ;         
+ 020A           ;         //mpu_configure_fifo
+ 020A           ;         if(!mpu_configure_fifo(INV_XYZ_GYRO | INV_XYZ_ACCEL))
+ 020A 08E7              ldi R16,120
+ 020C 0E940000          xcall _mpu_configure_fifo
+ 0210 5801              movw R10,R16
+ 0212 0030              cpi R16,0
+ 0214 0107              cpc R16,R17
+ 0216 29F4              brne L32
+ 0218           X10:
+ 0218                   .dbline 124
+ 0218           ;         {
+ 0218                   .dbline 125
+ 0218           ;                printf("\tFifo设定成功......\n\n");
+ 0218 00E0              ldi R16,<L34
+ 021A 10E0              ldi R17,>L34
+ 021C 0E940000          xcall _printf
+ 0220                   .dbline 126
+ 0220           ;         }
+ 0220 04C0              xjmp L33
+ 0222           L32:
+ 0222                   .dbline 128
+ 0222           ;         else
+ 0222           ;         {
+ 0222                   .dbline 129
+ 0222           ;                printf("\tFifo设定失败 ......\n\n");
+ 0222 00E0              ldi R16,<L35
+ 0224 10E0              ldi R17,>L35
+ 0226 0E940000          xcall _printf
+ 022A                   .dbline 130
+ 022A           ;         }
+ 022A           L33:
+ 022A                   .dbline 133
+ 022A           ;         
+ 022A           ;         //mpu_set_sample_rate
+ 022A           ;         if(!mpu_set_sample_rate(DEFAULT_MPU_HZ))
+ 022A 08EC              ldi R16,200
+ 022C 10E0              ldi R17,0
+ 022E 0E940000          xcall _mpu_set_sample_rate
+ 0232 5801              movw R10,R16
+ 0234 0030              cpi R16,0
+ 0236 0107              cpc R16,R17
+ 0238 29F4              brne L36
+ 023A           X11:
+ 023A                   .dbline 134
+ 023A           ;         {
+ 023A                   .dbline 135
+ 023A           ;                printf("\tDMP采样速率设定成功 ......\n\n");
+ 023A 00E0              ldi R16,<L38
+ 023C 10E0              ldi R17,>L38
+ 023E 0E940000          xcall _printf
+ 0242                   .dbline 136
+ 0242           ;         }
+ 0242 04C0              xjmp L37
+ 0244           L36:
+ 0244                   .dbline 138
+ 0244           ;         else
+ 0244           ;         {
+ 0244                   .dbline 139
+ 0244           ;                printf("\tDMP采样速率设定失败 ......\n\n");
+ 0244 00E0              ldi R16,<L39
+ 0246 10E0              ldi R17,>L39
+ 0248 0E940000          xcall _printf
+ 024C                   .dbline 140
+ 024C           ;         }
+ 024C           L37:
+ 024C                   .dbline 143
+ 024C           ;         
+ 024C           ;         //dmp_load_motion_driver_firmvare
+ 024C           ;         if(!dmp_load_motion_driver_firmware())
+ 024C 0E940000          xcall _dmp_load_motion_driver_firmware
+ 0250 5801              movw R10,R16
+ 0252 0030              cpi R16,0
+ 0254 0107              cpc R16,R17
+ 0256 29F4              brne L40
+ 0258           X12:
+ 0258                   .dbline 144
+ 0258           ;         {
+ 0258                   .dbline 145
+ 0258           ;               printf("\t开启DMP功能成功 ......\n\n");
+ 0258 00E0              ldi R16,<L42
+ 025A 10E0              ldi R17,>L42
+ 025C 0E940000          xcall _printf
+ 0260                   .dbline 146
+ 0260           ;         }
+ 0260 04C0              xjmp L41
+ 0262           L40:
+ 0262                   .dbline 148
+ 0262           ;         else
+ 0262           ;         {
+ 0262                   .dbline 149
+ 0262           ;               printf("\t开启DMP功能失败 ......\n\n");
+ 0262 00E0              ldi R16,<L43
+ 0264 10E0              ldi R17,>L43
+ 0266 0E940000          xcall _printf
+ 026A                   .dbline 150
+ 026A           ;         }
+ 026A           L41:
+ 026A                   .dbline 153
+ 026A           ;         
+ 026A           ;         //dmp_set_orientation
+ 026A           ;         if(!dmp_set_orientation(inv_orientation_matrix_to_scalar(gyro_orientation)))
+ 026A 00E0              ldi R16,<_gyro_orientation
+ 026C 10E0              ldi R17,>_gyro_orientation
+ 026E FDDE              xcall _inv_orientation_matrix_to_scalar
+ 0270 0E940000          xcall _dmp_set_orientation
+ 0274 5801              movw R10,R16
+ 0276 0030              cpi R16,0
+ 0278 0107              cpc R16,R17
+ 027A 29F4              brne L44
+ 027C           X13:
+ 027C                   .dbline 154
+ 027C           ;         {
+ 027C                   .dbline 155
+ 027C           ;                printf("\t初始方向设定偏差成功......\n\n");
+ 027C 00E0              ldi R16,<L46
+ 027E 10E0              ldi R17,>L46
+ 0280 0E940000          xcall _printf
+ 0284                   .dbline 156
+ 0284           ;         }
+ 0284 04C0              xjmp L45
+ 0286           L44:
+ 0286                   .dbline 158
+ 0286           ;         else
+ 0286           ;         {
+ 0286                   .dbline 159
+ 0286           ;                printf("\t初始方向设定偏差失败 ......\n\n");
+ 0286 00E0              ldi R16,<L47
+ 0288 10E0              ldi R17,>L47
+ 028A 0E940000          xcall _printf
+ 028E                   .dbline 160
+ 028E           ;         }
+ 028E           L45:
+ 028E                   .dbline 163
+ 028E           ;         
+ 028E           ;         //dmp_enable_feature
+ 028E           ;         if(!dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_TAP |
+ 028E 03E7              ldi R16,371
+ 0290 11E0              ldi R17,1
+ 0292 0E940000          xcall _dmp_enable_feature
+ 0296 5801              movw R10,R16
+ 0298 0030              cpi R16,0
+ 029A 0107              cpc R16,R17
+ 029C 29F4              brne L48
+ 029E           X14:
+ 029E                   .dbline 166
+ 029E           ;               DMP_FEATURE_ANDROID_ORIENT | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_SEND_CAL_GYRO |
+ 029E           ;               DMP_FEATURE_GYRO_CAL))
+ 029E           ;         {
+ 029E                   .dbline 167
+ 029E           ;                printf("\tDMP使能成功 ......\n\n");
+ 029E 00E0              ldi R16,<L50
+ 02A0 10E0              ldi R17,>L50
+ 02A2 0E940000          xcall _printf
+ 02A6                   .dbline 168
+ 02A6           ;         }
+ 02A6 04C0              xjmp L49
+ 02A8           L48:
+ 02A8                   .dbline 170
+ 02A8           ;         else
+ 02A8           ;         {
+ 02A8                   .dbline 171
+ 02A8           ;                printf("\tDMP使能失败 ......\n\n");
+ 02A8 00E0              ldi R16,<L51
+ 02AA 10E0              ldi R17,>L51
+ 02AC 0E940000          xcall _printf
+ 02B0                   .dbline 172
+ 02B0           ;         }
+ 02B0           L49:
+ 02B0                   .dbline 175
+ 02B0           ;         
+ 02B0           ;         //dmp_set_fifo_rate
+ 02B0           ;         if(!dmp_set_fifo_rate(DEFAULT_MPU_HZ))
+ 02B0 08EC              ldi R16,200
+ 02B2 10E0              ldi R17,0
+ 02B4 0E940000          xcall _dmp_set_fifo_rate
+ 02B8 5801              movw R10,R16
+ 02BA 0030              cpi R16,0
+ 02BC 0107              cpc R16,R17
+ 02BE 29F4              brne L52
+ 02C0           X15:
+ 02C0                   .dbline 176
+ 02C0           ;         {
+ 02C0                   .dbline 177
+ 02C0           ;                printf("\tFifo速度设定成功......\n\n");
+ 02C0 00E0              ldi R16,<L54
+ 02C2 10E0              ldi R17,>L54
+ 02C4 0E940000          xcall _printf
+ 02C8                   .dbline 178
+ 02C8           ;         }
+ 02C8 04C0              xjmp L53
+ 02CA           L52:
+ 02CA                   .dbline 180
+ 02CA           ;         else
+ 02CA           ;         {
+ 02CA                   .dbline 181
+ 02CA           ;                printf("\tFifo速度设定失败 ......\n\n");
+ 02CA 00E0              ldi R16,<L55
+ 02CC 10E0              ldi R17,>L55
+ 02CE 0E940000          xcall _printf
+ 02D2                   .dbline 182
+ 02D2           ;         }
+ 02D2           L53:
+ 02D2                   .dbline 184
+ 02D2           ;         
+ 02D2           ;         if(!mpu_set_dmp_state(1))
+ 02D2 01E0              ldi R16,1
+ 02D4 0E940000          xcall _mpu_set_dmp_state
+ 02D8 5801              movw R10,R16
+ 02DA 0030              cpi R16,0
+ 02DC 0107              cpc R16,R17
+ 02DE 29F4              brne L56
+ 02E0           X16:
+ 02E0                   .dbline 185
+ 02E0           ;         {
+ 02E0                   .dbline 186
+ 02E0           ;                printf("\tDMP写入驱动成功 ......\n\n");
+ 02E0 00E0              ldi R16,<L58
+ 02E2 10E0              ldi R17,>L58
+ 02E4 0E940000          xcall _printf
+ 02E8                   .dbline 187
+ 02E8           ;         }
+ 02E8 04C0              xjmp L57
+ 02EA           L56:
+ 02EA                   .dbline 189
+ 02EA           ;         else
+ 02EA           ;         {
+ 02EA                   .dbline 190
+ 02EA           ;                printf("\tDMP写入驱动失败 ......\n\n");
+ 02EA 00E0              ldi R16,<L59
+ 02EC 10E0              ldi R17,>L59
+ 02EE 0E940000          xcall _printf
+ 02F2                   .dbline 191
+ 02F2           ;         }
+ 02F2           L57:
+ 02F2                   .dbline 193
+ 02F2           ;         
+ 02F2           ;         run_self_test();
+ 02F2 DCDE              xcall _run_self_test
+ 02F4                   .dbline 194
+ 02F4           ;         delay_ms(200);
+ 02F4 08EC              ldi R16,200
+ 02F6 10E0              ldi R17,0
+ 02F8 0E940000          xcall _delay_ms
+ 02FC                   .dbline 195
+ 02FC           ;    }
+ 02FC           L25:
+ 02FC                   .dbline -2
+ 02FC           L24:
+ 02FC                   .dbline 0 ; func end
+ 02FC B990              ld R11,y+
+ 02FE A990              ld R10,y+
+ 0300 0895              ret
+ 0302                   .dbsym r result 10 I
+ 0302                   .dbend
+ 0302                   .dbfunc e Get_Angle _Get_Angle fV
+ 0302           ;           more -> y+44
+ 0302           ; sensor_timestamp -> y+40
+ 0302           ;             q3 -> y+36
+ 0302           ;             q0 -> y+32
+ 0302           ;           quat -> y+16
+ 0302           ;             q2 -> y+12
+ 0302           ;             q1 -> y+8
+ 0302           ;      angle_dot -> R10,R11
+ 0302           ;          angle -> R12,R13
+                        .even
+ 0302           _Get_Angle::
+ 0302 0E940000          xcall push_xgset003C
+ 0306 5901              movw R10,R18
+ 0308 6801              movw R12,R16
+ 030A E197              sbiw R28,49
+ 030C                   .dbline -1
+ 030C                   .dbline 199
+ 030C           ; }
+ 030C           ; 
+ 030C           ; void Get_Angle(float *angle, float *angle_dot)
+ 030C           ; {
+ 030C                   .dbline 200
+ 030C           ;     float q0=1.0f,q1=0.0f,q2=0.0f,q3=0.0f;
+ 030C 00E0              ldi R16,<L61
+ 030E 10E0              ldi R17,>L61
+ 0310 0E940000          xcall elpm32
+ 0314 08A3              std y+32,R16
+ 0316 19A3              std y+33,R17
+ 0318 2AA3              std y+34,R18
+ 031A 3BA3              std y+35,R19
+ 031C                   .dbline 200
+ 031C 00E0              ldi R16,<L62
+ 031E 10E0              ldi R17,>L62
+ 0320 0E940000          xcall elpm32
+ 0324 0887              std y+8,R16
+ 0326 1987              std y+9,R17
+ 0328 2A87              std y+10,R18
+ 032A 3B87              std y+11,R19
+ 032C                   .dbline 200
+ 032C 00E0              ldi R16,<L62
+ 032E 10E0              ldi R17,>L62
+ 0330 0E940000          xcall elpm32
+ 0334 0C87              std y+12,R16
+ 0336 1D87              std y+13,R17
+ 0338 2E87              std y+14,R18
+ 033A 3F87              std y+15,R19
+ 033C                   .dbline 200
+ 033C 00E0              ldi R16,<L62
+ 033E 10E0              ldi R17,>L62
+ 0340 0E940000          xcall elpm32
+ 0344 0CA3              std y+36,R16
+ 0346 1DA3              std y+37,R17
+ 0348 2EA3              std y+38,R18
+ 034A 3FA3              std y+39,R19
+ 034C                   .dbline 204
+ 034C           ;       unsigned long sensor_timestamp;
+ 034C           ;       unsigned char more;
+ 034C           ;       long quat[4];
+ 034C           ;       dmp_read_fifo(gyro, accel, quat, &sensor_timestamp, &sensors,&more);
+ 034C CE01              movw R24,R28
+ 034E 8C96              adiw R24,44
+ 0350 9F83              std y+7,R25
+ 0352 8E83              std y+6,R24
+ 0354 80E0              ldi R24,<_sensors
+ 0356 90E0              ldi R25,>_sensors
+ 0358 9D83              std y+5,R25
+ 035A 8C83              std y+4,R24
+ 035C CE01              movw R24,R28
+ 035E 8896              adiw R24,40
+ 0360 9B83              std y+3,R25
+ 0362 8A83              std y+2,R24
+ 0364 CE01              movw R24,R28
+ 0366 4096              adiw R24,16
+ 0368 9983              std y+1,R25
+ 036A 8883              std y+0,R24
+ 036C 20E0              ldi R18,<_accel
+ 036E 30E0              ldi R19,>_accel
+ 0370 00E0              ldi R16,<_gyro
+ 0372 10E0              ldi R17,>_gyro
+ 0374 0E940000          xcall _dmp_read_fifo
+ 0378                   .dbline 206
+ 0378           ;         
+ 0378           ;     if (sensors & INV_WXYZ_QUAT )
+ 0378 20900100          lds R2,_sensors
+ 037C 30900200          lds R3,_sensors+1
+ 0380 30FE              sbrs R3,0
+ 0382 C7C0              rjmp L63
+ 0384           X18:
+ 0384                   .dbline 207
+ 0384           ;       {
+ 0384                   .dbline 208
+ 0384           ;               q0=quat[0] / q30;
+ 0384 0889              ldd R16,y+16
+ 0386 1989              ldd R17,y+17
+ 0388 2A89              ldd R18,y+18
+ 038A 3B89              ldd R19,y+19
+ 038C 0E940000          xcall long2fp
+ 0390 1801              movw R2,R16
+ 0392 2901              movw R4,R18
+ 0394 00E0              ldi R16,<L65
+ 0396 10E0              ldi R17,>L65
+ 0398 0E940000          xcall elpm32
+ 039C 3A93              st -y,R19
+ 039E 2A93              st -y,R18
+ 03A0 1A93              st -y,R17
+ 03A2 0A93              st -y,R16
+ 03A4 8101              movw R16,R2
+ 03A6 9201              movw R18,R4
+ 03A8 0E940000          xcall fpdiv2
+ 03AC 08A3              std y+32,R16
+ 03AE 19A3              std y+33,R17
+ 03B0 2AA3              std y+34,R18
+ 03B2 3BA3              std y+35,R19
+ 03B4                   .dbline 209
+ 03B4           ;               q1=quat[1] / q30;
+ 03B4 0C89              ldd R16,y+20
+ 03B6 1D89              ldd R17,y+21
+ 03B8 2E89              ldd R18,y+22
+ 03BA 3F89              ldd R19,y+23
+ 03BC 0E940000          xcall long2fp
+ 03C0 1801              movw R2,R16
+ 03C2 2901              movw R4,R18
+ 03C4 00E0              ldi R16,<L65
+ 03C6 10E0              ldi R17,>L65
+ 03C8 0E940000          xcall elpm32
+ 03CC 3A93              st -y,R19
+ 03CE 2A93              st -y,R18
+ 03D0 1A93              st -y,R17
+ 03D2 0A93              st -y,R16
+ 03D4 8101              movw R16,R2
+ 03D6 9201              movw R18,R4
+ 03D8 0E940000          xcall fpdiv2
+ 03DC 0887              std y+8,R16
+ 03DE 1987              std y+9,R17
+ 03E0 2A87              std y+10,R18
+ 03E2 3B87              std y+11,R19
+ 03E4                   .dbline 210
+ 03E4           ;               q2=quat[2] / q30;
+ 03E4 088D              ldd R16,y+24
+ 03E6 198D              ldd R17,y+25
+ 03E8 2A8D              ldd R18,y+26
+ 03EA 3B8D              ldd R19,y+27
+ 03EC 0E940000          xcall long2fp
+ 03F0 1801              movw R2,R16
+ 03F2 2901              movw R4,R18
+ 03F4 00E0              ldi R16,<L65
+ 03F6 10E0              ldi R17,>L65
+ 03F8 0E940000          xcall elpm32
+ 03FC 3A93              st -y,R19
+ 03FE 2A93              st -y,R18
+ 0400 1A93              st -y,R17
+ 0402 0A93              st -y,R16
+ 0404 8101              movw R16,R2
+ 0406 9201              movw R18,R4
+ 0408 0E940000          xcall fpdiv2
+ 040C 0C87              std y+12,R16
+ 040E 1D87              std y+13,R17
+ 0410 2E87              std y+14,R18
+ 0412 3F87              std y+15,R19
+ 0414                   .dbline 211
+ 0414           ;               q3=quat[3] / q30;
+ 0414 0C8D              ldd R16,y+28
+ 0416 1D8D              ldd R17,y+29
+ 0418 2E8D              ldd R18,y+30
+ 041A 3F8D              ldd R19,y+31
+ 041C 0E940000          xcall long2fp
+ 0420 1801              movw R2,R16
+ 0422 2901              movw R4,R18
+ 0424 00E0              ldi R16,<L65
+ 0426 10E0              ldi R17,>L65
+ 0428 0E940000          xcall elpm32
+ 042C 3A93              st -y,R19
+ 042E 2A93              st -y,R18
+ 0430 1A93              st -y,R17
+ 0432 0A93              st -y,R16
+ 0434 8101              movw R16,R2
+ 0436 9201              movw R18,R4
+ 0438 0E940000          xcall fpdiv2
+ 043C 0CA3              std y+36,R16
+ 043E 1DA3              std y+37,R17
+ 0440 2EA3              std y+38,R18
+ 0442 3FA3              std y+39,R19
+ 0444                   .dbline 212
+ 0444           ;       *angle = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1); 
+ 0444 00E0              ldi R16,<L70
+ 0446 10E0              ldi R17,>L70
+ 0448 0E940000          xcall elpm32
+ 044C CE01              movw R24,R28
+ 044E 0C96              adiw R24,12
+ 0450 9A93              st -y,R25
+ 0452 8A93              st -y,R24
+ 0454 0E940000          xcall fpmule1
+ 0458 0DA7              std y+45,R16
+ 045A 1EA7              std y+46,R17
+ 045C 2FA7              std y+47,R18
+ 045E 38AB              std y+48,R19
+ 0460 00E0              ldi R16,<L69
+ 0462 10E0              ldi R17,>L69
+ 0464 0E940000          xcall elpm32
+ 0468 CE01              movw R24,R28
+ 046A 0896              adiw R24,8
+ 046C 9A93              st -y,R25
+ 046E 8A93              st -y,R24
+ 0470 0E940000          xcall fpmule1
+ 0474 CE01              movw R24,R28
+ 0476 0896              adiw R24,8
+ 0478 9A93              st -y,R25
+ 047A 8A93              st -y,R24
+ 047C 0E940000          xcall fpmule1
+ 0480 1801              movw R2,R16
+ 0482 2901              movw R4,R18
+ 0484 0DA5              ldd R16,y+45
+ 0486 1EA5              ldd R17,y+46
+ 0488 2FA5              ldd R18,y+47
+ 048A 38A9              ldd R19,y+48
+ 048C CE01              movw R24,R28
+ 048E 0C96              adiw R24,12
+ 0490 9A93              st -y,R25
+ 0492 8A93              st -y,R24
+ 0494 0E940000          xcall fpmule1x
+ 0498 8101              movw R16,R2
+ 049A 9201              movw R18,R4
+ 049C 0E940000          xcall fpsub2
+ 04A0 1801              movw R2,R16
+ 04A2 2901              movw R4,R18
+ 04A4 00E0              ldi R16,<L61
+ 04A6 10E0              ldi R17,>L61
+ 04A8 0E940000          xcall elpm32
+ 04AC 3A93              st -y,R19
+ 04AE 2A93              st -y,R18
+ 04B0 1A93              st -y,R17
+ 04B2 0A93              st -y,R16
+ 04B4 8101              movw R16,R2
+ 04B6 9201              movw R18,R4
+ 04B8 0E940000          xcall fpadd2
+ 04BC 0883              std y+0,R16
+ 04BE 1983              std y+1,R17
+ 04C0 2A83              std y+2,R18
+ 04C2 3B83              std y+3,R19
+ 04C4 0DA5              ldd R16,y+45
+ 04C6 1EA5              ldd R17,y+46
+ 04C8 2FA5              ldd R18,y+47
+ 04CA 38A9              ldd R19,y+48
+ 04CC CE01              movw R24,R28
+ 04CE 8496              adiw R24,36
+ 04D0 9A93              st -y,R25
+ 04D2 8A93              st -y,R24
+ 04D4 0E940000          xcall fpmule1
+ 04D8 1801              movw R2,R16
+ 04DA 2901              movw R4,R18
+ 04DC 00E0              ldi R16,<L70
+ 04DE 10E0              ldi R17,>L70
+ 04E0 0E940000          xcall elpm32
+ 04E4 CE01              movw R24,R28
+ 04E6 8096              adiw R24,32
+ 04E8 9A93              st -y,R25
+ 04EA 8A93              st -y,R24
+ 04EC 0E940000          xcall fpmule1
+ 04F0 CE01              movw R24,R28
+ 04F2 0896              adiw R24,8
+ 04F4 9A93              st -y,R25
+ 04F6 8A93              st -y,R24
+ 04F8 0E940000          xcall fpmule1x
+ 04FC 8101              movw R16,R2
+ 04FE 9201              movw R18,R4
+ 0500 0E940000          xcall fpadd2
+ 0504 0E940000          xcall _atan2f
+ 0508 F601              movw R30,R12
+ 050A 0083              std z+0,R16
+ 050C 1183              std z+1,R17
+ 050E 2283              std z+2,R18
+ 0510 3383              std z+3,R19
+ 0512                   .dbline 213
+ 0512           ;       }
+ 0512           L63:
+ 0512                   .dbline 215
+ 0512           ; 
+ 0512           ;       if(sensors & INV_XYZ_GYRO)
+ 0512 80910100          lds R24,_sensors
+ 0516 90910200          lds R25,_sensors+1
+ 051A 8077              andi R24,112
+ 051C 9070              andi R25,0
+ 051E 8030              cpi R24,0
+ 0520 8907              cpc R24,R25
+ 0522 09F4              brne X20
+ 0524 33C0              xjmp L71
+ 0526           X20:
+ 0526           X19:
+ 0526                   .dbline 216
+ 0526           ;       {
+ 0526                   .dbline 217
+ 0526           ;           *angle_dot=-(gyro[0]/Gyro_250_Scale_Factor)*3.14159/180;
+ 0526 00E0              ldi R16,<L73
+ 0528 10E0              ldi R17,>L73
+ 052A 0E940000          xcall elpm32
+ 052E 1801              movw R2,R16
+ 0530 2901              movw R4,R18
+ 0532 00910900          lds R16,_gyro
+ 0536 10910A00          lds R17,_gyro+1
+ 053A 0E940000          xcall int2fp
+ 053E 3801              movw R6,R16
+ 0540 4901              movw R8,R18
+ 0542 00E0              ldi R16,<L74
+ 0544 10E0              ldi R17,>L74
+ 0546 0E940000          xcall elpm32
+ 054A 3A93              st -y,R19
+ 054C 2A93              st -y,R18
+ 054E 1A93              st -y,R17
+ 0550 0A93              st -y,R16
+ 0552 8301              movw R16,R6
+ 0554 9401              movw R18,R8
+ 0556 0E940000          xcall fpdiv2
+ 055A 0E940000          xcall fpneg2
+ 055E 8101              movw R16,R2
+ 0560 9201              movw R18,R4
+ 0562 0E940000          xcall fpmule2
+ 0566 1801              movw R2,R16
+ 0568 2901              movw R4,R18
+ 056A 00E0              ldi R16,<L75
+ 056C 10E0              ldi R17,>L75
+ 056E 0E940000          xcall elpm32
+ 0572 3A93              st -y,R19
+ 0574 2A93              st -y,R18
+ 0576 1A93              st -y,R17
+ 0578 0A93              st -y,R16
+ 057A 8101              movw R16,R2
+ 057C 9201              movw R18,R4
+ 057E 0E940000          xcall fpdiv2
+ 0582 F501              movw R30,R10
+ 0584 0083              std z+0,R16
+ 0586 1183              std z+1,R17
+ 0588 2283              std z+2,R18
+ 058A 3383              std z+3,R19
+ 058C                   .dbline 218
+ 058C           ;       }
+ 058C           L71:
+ 058C                   .dbline -2
+ 058C           L60:
+ 058C                   .dbline 0 ; func end
+ 058C E196              adiw R28,49
+ 058E 0C940000          xjmp pop_xgset003C
+ 0592                   .dbsym l more 44 c
+ 0592                   .dbsym l sensor_timestamp 40 l
+ 0592                   .dbsym l q3 36 D
+ 0592                   .dbsym l q0 32 D
+ 0592                   .dbsym l quat 16 A[16:4]L
+ 0592                   .dbsym l q2 12 D
+ 0592                   .dbsym l q1 8 D
+ 0592                   .dbsym r angle_dot 10 pD
+ 0592                   .dbsym r angle 12 pD
+ 0592                   .dbend
+                        .area bss(ram, con, rel)
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0000           _rx_new::
+ 0000                   .blkb 1
+ 0001                   .dbsym e rx_new _rx_new c
+ 0001           _sensors::
+ 0001                   .blkb 2
+ 0003                   .dbsym e sensors _sensors S
+ 0003           _accel::
+ 0003                   .blkb 6
+ 0009                   .dbsym e accel _accel A[6:3]S
+ 0009           _gyro::
+ 0009                   .blkb 6
+ 000F                   .dbsym e gyro _gyro A[6:3]S
+                        .area lit(rom, con, rel)
+ 0000           L75:
+ 0000 00003443          .word 0x0,0x4334
+ 0004           L74:
+ 0004 00000343          .word 0x0,0x4303
+ 0008           L73:
+ 0008 D00F4940          .word 0xfd0,0x4049
+ 000C           L70:
+ 000C 00000040          .word 0x0,0x4000
+ 0010           L69:
+ 0010 000000C0          .word 0x0,0xc000
+ 0014           L65:
+ 0014 0000804E          .word 0x0,0x4e80
+ 0018           L62:
+ 0018 00000000          .word 0x0,0x0
+ 001C           L61:
+ 001C 0000803F          .word 0x0,0x3f80
+                        .area data(ram, con, rel)
+ 0016                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0016           L59:
+ 0016                   .blkb 26
+                        .area idata
+ 0016 09444D50D0B4C8EBC7FDB6AFCAA7B0DC  .byte 9,'D,'M,'P,208,180,200,235,199,253,182,175,202,167,176,220
+ 0026 202E2E2E2E2E2E0A0A00      .byte 32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 0030                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0030           L58:
+ 0030                   .blkb 26
+                        .area idata
+ 0030 09444D50D0B4C8EBC7FDB6AFB3C9B9A6  .byte 9,'D,'M,'P,208,180,200,235,199,253,182,175,179,201,185,166
+ 0040 202E2E2E2E2E2E0A0A00      .byte 32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 004A                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 004A           L55:
+ 004A                   .blkb 27
+                        .area idata
+ 004A 094669666FCBD9B6C8C9E8B6A8CAA7B0  .byte 9,'F,'i,'f,'o,203,217,182,200,201,232,182,168,202,167,176
+ 005A DC202E2E2E2E2E2E0A0A00    .byte 220,32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 0065                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0065           L54:
+ 0065                   .blkb 26
+                        .area idata
+ 0065 094669666FCBD9B6C8C9E8B6A8B3C9B9  .byte 9,'F,'i,'f,'o,203,217,182,200,201,232,182,168,179,201,185
+ 0075 A62E2E2E2E2E2E0A0A00      .byte 166,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 007F                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 007F           L51:
+ 007F                   .blkb 22
+                        .area idata
+ 007F 09444D50CAB9C4DCCAA7B0DC202E2E2E  .byte 9,'D,'M,'P,202,185,196,220,202,167,176,220,32,46,46,46
+ 008F 2E2E2E0A0A00      .byte 46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 0095                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0095           L50:
+ 0095                   .blkb 22
+                        .area idata
+ 0095 09444D50CAB9C4DCB3C9B9A6202E2E2E  .byte 9,'D,'M,'P,202,185,196,220,179,201,185,166,32,46,46,46
+ 00A5 2E2E2E0A0A00      .byte 46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 00AB                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 00AB           L47:
+ 00AB                   .blkb 31
+                        .area idata
+ 00AB 09B3F5CABCB7BDCFF2C9E8B6A8C6ABB2  .byte 9,179,245,202,188,183,189,207,242,201,232,182,168,198,171,178
+ 00BB EECAA7B0DC202E2E2E2E2E2E0A0A00    .byte 238,202,167,176,220,32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 00CA                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 00CA           L46:
+ 00CA                   .blkb 30
+                        .area idata
+ 00CA 09B3F5CABCB7BDCFF2C9E8B6A8C6ABB2  .byte 9,179,245,202,188,183,189,207,242,201,232,182,168,198,171,178
+ 00DA EEB3C9B9A62E2E2E2E2E2E0A0A00      .byte 238,179,201,185,166,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 00E8                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 00E8           L43:
+ 00E8                   .blkb 26
+                        .area idata
+ 00E8 09BFAAC6F4444D50B9A6C4DCCAA7B0DC  .byte 9,191,170,198,244,'D,'M,'P,185,166,196,220,202,167,176,220
+ 00F8 202E2E2E2E2E2E0A0A00      .byte 32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 0102                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0102           L42:
+ 0102                   .blkb 26
+                        .area idata
+ 0102 09BFAAC6F4444D50B9A6C4DCB3C9B9A6  .byte 9,191,170,198,244,'D,'M,'P,185,166,196,220,179,201,185,166
+ 0112 202E2E2E2E2E2E0A0A00      .byte 32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 011C                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 011C           L39:
+ 011C                   .blkb 30
+                        .area idata
+ 011C 09444D50B2C9D1F9CBD9C2CAC9E8B6A8  .byte 9,'D,'M,'P,178,201,209,249,203,217,194,202,201,232,182,168
+ 012C CAA7B0DC202E2E2E2E2E2E0A0A00      .byte 202,167,176,220,32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 013A                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 013A           L38:
+ 013A                   .blkb 30
+                        .area idata
+ 013A 09444D50B2C9D1F9CBD9C2CAC9E8B6A8  .byte 9,'D,'M,'P,178,201,209,249,203,217,194,202,201,232,182,168
+ 014A B3C9B9A6202E2E2E2E2E2E0A0A00      .byte 179,201,185,166,32,46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 0158                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0158           L35:
+ 0158                   .blkb 23
+                        .area idata
+ 0158 094669666FC9E8B6A8CAA7B0DC202E2E  .byte 9,'F,'i,'f,'o,201,232,182,168,202,167,176,220,32,46,46
+ 0168 2E2E2E2E0A0A00    .byte 46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 016F                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 016F           L34:
+ 016F                   .blkb 22
+                        .area idata
+ 016F 094669666FC9E8B6A8B3C9B9A62E2E2E  .byte 9,'F,'i,'f,'o,201,232,182,168,179,201,185,166,46,46,46
+ 017F 2E2E2E0A0A00      .byte 46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 0185                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 0185           L31:
+ 0185                   .blkb 25
+                        .area idata
+ 0185 09B4ABB8D0C6F7C9E8B6A8CAA7B0DC20  .byte 9,180,171,184,208,198,247,201,232,182,168,202,167,176,220,32
+ 0195 2E2E2E2E2E2E0A0A00        .byte 46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 019E                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 019E           L30:
+ 019E                   .blkb 25
+                        .area idata
+ 019E 09B4ABB8D0C6F7C9E8B6A8B3C9B9A620  .byte 9,180,171,184,208,198,247,201,232,182,168,179,201,185,166,32
+ 01AE 2E2E2E2E2E2E0A0A00        .byte 46,46,46,46,46,46,10,10,0
+                        .area data(ram, con, rel)
+ 01B7                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 01B7           L27:
+ 01B7                   .blkb 20
+                        .area idata
+ 01B7 0909444D50B3F5CABCBBAF2E2E2E2E2E  .byte 9,9,'D,'M,'P,179,245,202,188,187,175,46,46,46,46,46
+ 01C7 0A0A2000          .byte 10,10,32,0
+                        .area data(ram, con, rel)
+ 01CB                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\mpu6050.c
+ 01CB           ;       
+ 01CB           ;       //UART0_ReportIMU(0,0,Roll*10,0,0,0);
+ 01CB           ;       //UART0_ReportMotion(0,accel[1],0,gyro[0],0,0,0,0,0);
+ 01CB           ; }

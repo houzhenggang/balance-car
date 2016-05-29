@@ -1,0 +1,8 @@
+#include "iom128v.h"
+#include "encoder.h"
+
+void encoder_init(void)
+{
+ 	 DDRD &= ~0x03;
+	 EIMSK |= (1<<IINT0) | (1<<IINT1);
+}

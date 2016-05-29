@@ -1,0 +1,103 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "macros.h"
+#include "motor.h"
+#include "usart.h"
+#include "encoder.h"
+#include "mpu6050.h"
+#include "i2c.h"
+#include "pid.h"
+
+unsigned int loops = 0;
+unsigned char loopsBit = 0;
+unsigned char timeFlag = 0;
+unsigned int kp=4000, ki=200, kd=4500;
+unsigned int ks=3, ksp=0.1;
+
+float angle, angle_dot;
+int speed, distance;
+
+pid_s sPID;	
+float angle_Targer;
+int PWM_L,PWM_R;
+int PWM_Balance;
+static int PWM_Speed = 0;
+static int PWM_Turn = 0;
+
+int main(void)
+{
+	usart0_init(9600);
+	printf("\tusart0 init OK!\n");
+	
+	motor_init();
+	
+	encoder_init();
+	
+	MPU6050_Config();
+	Get_Angle(&angle, &angle_dot);			
+	angle_Targer = angle;
+	pid_init(&sPID, kp, ki, kd, angle_Targer);	
+	
+	timer3_init();
+	
+	while(1)
+	{
+	    if(loopsBit & 0x01)
+		{	   
+		   loopsBit &= ~(0x01);
+		   
+		   Get_Angle(&angle, &angle_dot);			
+		   //Get_Speed(&speed, &distance);
+		   
+	 	   PWM_Balance = pid_proc(&sPID, angle, angle_dot);
+	 	   PWM_Balance += (ks*speed + ksp*distance);
+		   
+	 	   PWM_L = PWM_Balance + PWM_Speed - PWM_Turn; 
+	 	   PWM_R = PWM_Balance + PWM_Speed + PWM_Turn;
+	 
+	 	   PWM_output(PWM_L, PWM_R);   
+		}
+		
+		if(loopsBit & 0x02)
+		{
+	 	   Get_Speed(&speed, &distance);
+		   loopsBit &= ~(0x02);
+		}
+		
+		if(loopsBit & 0x04)
+		{
+		   loopsBit &= ~(0x04);
+		   printf("%d  %d\n",PWM_L, PWM_R);
+		}
+		
+		if(loopsBit & 0x08)
+		{
+	 	   loopsBit &= ~(0x08);
+		   loops = 0;	   	
+		}
+	}
+	
+	return 0;
+}
+
+//定时器3中断溢出,1ms中断一次
+#pragma interrupt_handler timer3_interrupt: 30
+void timer3_interrupt(void) 
+{    
+	 TCNT3=49535;
+	 loops++; 
+	 
+	 if(!(loops % 3))    {loopsBit |= 0x01;}  
+	 if(!(loops % 10))    {loopsBit |= 0x02;} 
+	 if(!(loops % 100))   {loopsBit |= 0x04;}   
+	 if(!(loops % 1000))  {loopsBit |= 0x08;}  
+}
+
+//串口0接收中断
+#pragma interrupt_handler uart_receive:19
+void uart_receive(void)
+{  
+   unsigned char rchar;
+
+   rchar = UDR0;
+}

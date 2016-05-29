@@ -1,0 +1,1101 @@
+                        .module upload.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile upload.c
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\upload.c
+ 0000                   .dbfunc e UART0_ReportIMU _UART0_ReportIMU fV
+ 0000           ;           temp -> R10,R11
+ 0000           ;          ctemp -> R12
+ 0000           ;          press -> y+18
+ 0000           ;          tempr -> y+16
+ 0000           ;            alt -> y+14
+ 0000           ;           roll -> y+12
+ 0000           ;          pitch -> y+10
+ 0000           ;            yaw -> R14,R15
+                        .even
+ 0000           _UART0_ReportIMU::
+ 0000 3A93              st -y,r19
+ 0002 2A93              st -y,r18
+ 0004 0E940000          xcall push_xgsetF0FC
+ 0008 7801              movw R14,R16
+ 000A                   .dbline -1
+ 000A                   .dbline 21
+ 000A           ; #include"upload.h"
+ 000A           ; #include"usart.h"
+ 000A           ; 
+ 000A           ; //数据通过串口1上传上位机驱动程序
+ 000A           ; 
+ 000A           ; /**************************实现函数********************************************
+ 000A           ; *函数原型:            void UART1_ReportIMU(s16 yaw,s16 pitch,s16 roll
+ 000A           ;                               ,s16 alt,s16 tempr,s16 press)
+ 000A           ; *功　　能:            向上位机发送经过解算后的姿态数据
+ 000A           ; 输入参数：
+ 000A           ;               s16 yaw 经过解算后的航向角度。单位为0.1度 0 -> 3600  对应 0 -> 360.0度
+ 000A           ;               s16 pitch 解算得到的俯仰角度，单位 0.1度。-900 - 900 对应 -90.0 -> 90.0 度
+ 000A           ;               s16 roll  解算后得到的横滚角度，单位0.1度。 -1800 -> 1800 对应 -180.0  ->  180.0度
+ 000A           ;               s16 alt   气压高度。 单位0.1米。  范围一个整型变量
+ 000A           ;               s16 tempr 温度 。 单位0.1摄氏度   范围：直到你的电路板不能正常工作
+ 000A           ;               s16 press 气压压力。单位10Pa  一个大气压强在101300pa 这个已经超过一个整型的范围。需要除以10再发给上位机
+ 000A           ;               s16 IMUpersec  姿态解算速率。运算IMUpersec每秒。
+ 000A           ; 输出参数：没有        
+ 000A           ; *******************************************************************************/
+ 000A           ; void UART0_ReportIMU(short int yaw,short int pitch,short int roll,short int alt,short int tempr,short int press)
+ 000A           ; {
+ 000A                   .dbline 22
+ 000A           ;       unsigned int temp=0xaF+2;
+ 000A 81EB              ldi R24,177
+ 000C 90E0              ldi R25,0
+ 000E 5C01              movw R10,R24
+ 0010                   .dbline 24
+ 0010           ;       char ctemp;
+ 0010           ;       send_char(0xa5);
+ 0010 05EA              ldi R16,165
+ 0012 0E940000          xcall _send_char
+ 0016                   .dbline 25
+ 0016           ;       send_char(0x5a);
+ 0016 0AE5              ldi R16,90
+ 0018 0E940000          xcall _send_char
+ 001C                   .dbline 26
+ 001C           ;       send_char(14+2);
+ 001C 00E1              ldi R16,16
+ 001E 0E940000          xcall _send_char
+ 0022                   .dbline 27
+ 0022           ;       send_char(0xA1);
+ 0022 01EA              ldi R16,161
+ 0024 0E940000          xcall _send_char
+ 0028                   .dbline 29
+ 0028           ; 
+ 0028           ;       if(yaw<0)yaw=32768-yaw;
+ 0028 C701              movw R24,R14
+ 002A 8030              cpi R24,0
+ 002C E0E0              ldi R30,0
+ 002E 9E07              cpc R25,R30
+ 0030 84F4              brge L2
+ 0032           X0:
+ 0032                   .dbline 29
+ 0032 1C01              movw R2,R24
+ 0034 4424              clr R4
+ 0036 37FC              sbrc R3,7
+ 0038 4094              com R4
+ 003A 5524              clr R5
+ 003C 47FC              sbrc R4,7
+ 003E 5094              com R5
+ 0040 40E0              ldi R20,0
+ 0042 50E8              ldi R21,128
+ 0044 60E0              ldi R22,0
+ 0046 70E0              ldi R23,0
+ 0048 4219              sub R20,R2
+ 004A 5309              sbc R21,R3
+ 004C 6409              sbc R22,R4
+ 004E 7509              sbc R23,R5
+ 0050 7A01              movw R14,R20
+ 0052           L2:
+ 0052                   .dbline 30
+ 0052           ;       ctemp=yaw>>8;
+ 0052 6701              movw R12,R14
+ 0054 CD2C              mov R12,R13
+ 0056 DD24              clr R13
+ 0058 C7FC              sbrc R12,7
+ 005A D094              com R13
+ 005C                   .dbline 31
+ 005C           ;       send_char(ctemp);
+ 005C 0C2D              mov R16,R12
+ 005E 0E940000          xcall _send_char
+ 0062                   .dbline 32
+ 0062           ;       temp+=ctemp;
+ 0062 2C2C              mov R2,R12
+ 0064 3324              clr R3
+ 0066 A20C              add R10,R2
+ 0068 B31C              adc R11,R3
+ 006A                   .dbline 33
+ 006A           ;       ctemp=yaw;
+ 006A CE2C              mov R12,R14
+ 006C                   .dbline 34
+ 006C           ;       send_char(ctemp);
+ 006C 0C2D              mov R16,R12
+ 006E 0E940000          xcall _send_char
+ 0072                   .dbline 35
+ 0072           ;       temp+=ctemp;
+ 0072 2C2C              mov R2,R12
+ 0074 3324              clr R3
+ 0076 A20C              add R10,R2
+ 0078 B31C              adc R11,R3
+ 007A                   .dbline 37
+ 007A           ; 
+ 007A           ;       if(pitch<0)pitch=32768-pitch;
+ 007A 8A85              ldd R24,y+10
+ 007C 9B85              ldd R25,y+11
+ 007E 8030              cpi R24,0
+ 0080 E0E0              ldi R30,0
+ 0082 9E07              cpc R25,R30
+ 0084 94F4              brge L4
+ 0086           X1:
+ 0086                   .dbline 37
+ 0086 1C01              movw R2,R24
+ 0088 4424              clr R4
+ 008A 37FC              sbrc R3,7
+ 008C 4094              com R4
+ 008E 5524              clr R5
+ 0090 47FC              sbrc R4,7
+ 0092 5094              com R5
+ 0094 40E0              ldi R20,0
+ 0096 50E8              ldi R21,128
+ 0098 60E0              ldi R22,0
+ 009A 70E0              ldi R23,0
+ 009C 4219              sub R20,R2
+ 009E 5309              sbc R21,R3
+ 00A0 6409              sbc R22,R4
+ 00A2 7509              sbc R23,R5
+ 00A4 1A01              movw R2,R20
+ 00A6 3B86              std y+11,R3
+ 00A8 2A86              std y+10,R2
+ 00AA           L4:
+ 00AA                   .dbline 38
+ 00AA           ;       ctemp=pitch>>8;
+ 00AA CA84              ldd R12,y+10
+ 00AC DB84              ldd R13,y+11
+ 00AE CD2C              mov R12,R13
+ 00B0 DD24              clr R13
+ 00B2 C7FC              sbrc R12,7
+ 00B4 D094              com R13
+ 00B6                   .dbline 39
+ 00B6           ;       send_char(ctemp);
+ 00B6 0C2D              mov R16,R12
+ 00B8 0E940000          xcall _send_char
+ 00BC                   .dbline 40
+ 00BC           ;       temp+=ctemp;
+ 00BC 2C2C              mov R2,R12
+ 00BE 3324              clr R3
+ 00C0 A20C              add R10,R2
+ 00C2 B31C              adc R11,R3
+ 00C4                   .dbline 41
+ 00C4           ;       ctemp=pitch;
+ 00C4 CA84              ldd R12,y+10
+ 00C6 DB84              ldd R13,y+11
+ 00C8                   .dbline 42
+ 00C8           ;       send_char(ctemp);
+ 00C8 0C2D              mov R16,R12
+ 00CA 0E940000          xcall _send_char
+ 00CE                   .dbline 43
+ 00CE           ;       temp+=ctemp;
+ 00CE 2C2C              mov R2,R12
+ 00D0 3324              clr R3
+ 00D2 A20C              add R10,R2
+ 00D4 B31C              adc R11,R3
+ 00D6                   .dbline 45
+ 00D6           ; 
+ 00D6           ;       if(roll<0)roll=32768-roll;
+ 00D6 8C85              ldd R24,y+12
+ 00D8 9D85              ldd R25,y+13
+ 00DA 8030              cpi R24,0
+ 00DC E0E0              ldi R30,0
+ 00DE 9E07              cpc R25,R30
+ 00E0 94F4              brge L6
+ 00E2           X2:
+ 00E2                   .dbline 45
+ 00E2 1C01              movw R2,R24
+ 00E4 4424              clr R4
+ 00E6 37FC              sbrc R3,7
+ 00E8 4094              com R4
+ 00EA 5524              clr R5
+ 00EC 47FC              sbrc R4,7
+ 00EE 5094              com R5
+ 00F0 40E0              ldi R20,0
+ 00F2 50E8              ldi R21,128
+ 00F4 60E0              ldi R22,0
+ 00F6 70E0              ldi R23,0
+ 00F8 4219              sub R20,R2
+ 00FA 5309              sbc R21,R3
+ 00FC 6409              sbc R22,R4
+ 00FE 7509              sbc R23,R5
+ 0100 1A01              movw R2,R20
+ 0102 3D86              std y+13,R3
+ 0104 2C86              std y+12,R2
+ 0106           L6:
+ 0106                   .dbline 46
+ 0106           ;       ctemp=roll>>8;
+ 0106 CC84              ldd R12,y+12
+ 0108 DD84              ldd R13,y+13
+ 010A CD2C              mov R12,R13
+ 010C DD24              clr R13
+ 010E C7FC              sbrc R12,7
+ 0110 D094              com R13
+ 0112                   .dbline 47
+ 0112           ;       send_char(ctemp);
+ 0112 0C2D              mov R16,R12
+ 0114 0E940000          xcall _send_char
+ 0118                   .dbline 48
+ 0118           ;       temp+=ctemp;
+ 0118 2C2C              mov R2,R12
+ 011A 3324              clr R3
+ 011C A20C              add R10,R2
+ 011E B31C              adc R11,R3
+ 0120                   .dbline 49
+ 0120           ;       ctemp=roll;
+ 0120 CC84              ldd R12,y+12
+ 0122 DD84              ldd R13,y+13
+ 0124                   .dbline 50
+ 0124           ;       send_char(ctemp);
+ 0124 0C2D              mov R16,R12
+ 0126 0E940000          xcall _send_char
+ 012A                   .dbline 51
+ 012A           ;       temp+=ctemp;
+ 012A 2C2C              mov R2,R12
+ 012C 3324              clr R3
+ 012E A20C              add R10,R2
+ 0130 B31C              adc R11,R3
+ 0132                   .dbline 53
+ 0132           ;        
+ 0132           ;       if(alt<0)alt=32768-alt;
+ 0132 8E85              ldd R24,y+14
+ 0134 9F85              ldd R25,y+15
+ 0136 8030              cpi R24,0
+ 0138 E0E0              ldi R30,0
+ 013A 9E07              cpc R25,R30
+ 013C 94F4              brge L8
+ 013E           X3:
+ 013E                   .dbline 53
+ 013E 1C01              movw R2,R24
+ 0140 4424              clr R4
+ 0142 37FC              sbrc R3,7
+ 0144 4094              com R4
+ 0146 5524              clr R5
+ 0148 47FC              sbrc R4,7
+ 014A 5094              com R5
+ 014C 40E0              ldi R20,0
+ 014E 50E8              ldi R21,128
+ 0150 60E0              ldi R22,0
+ 0152 70E0              ldi R23,0
+ 0154 4219              sub R20,R2
+ 0156 5309              sbc R21,R3
+ 0158 6409              sbc R22,R4
+ 015A 7509              sbc R23,R5
+ 015C 1A01              movw R2,R20
+ 015E 3F86              std y+15,R3
+ 0160 2E86              std y+14,R2
+ 0162           L8:
+ 0162                   .dbline 54
+ 0162           ;       ctemp=alt>>8;
+ 0162 CE84              ldd R12,y+14
+ 0164 DF84              ldd R13,y+15
+ 0166 CD2C              mov R12,R13
+ 0168 DD24              clr R13
+ 016A C7FC              sbrc R12,7
+ 016C D094              com R13
+ 016E                   .dbline 55
+ 016E           ;       send_char(ctemp);
+ 016E 0C2D              mov R16,R12
+ 0170 0E940000          xcall _send_char
+ 0174                   .dbline 56
+ 0174           ;       temp+=ctemp;
+ 0174 2C2C              mov R2,R12
+ 0176 3324              clr R3
+ 0178 A20C              add R10,R2
+ 017A B31C              adc R11,R3
+ 017C                   .dbline 57
+ 017C           ;       ctemp=alt;
+ 017C CE84              ldd R12,y+14
+ 017E DF84              ldd R13,y+15
+ 0180                   .dbline 58
+ 0180           ;       send_char(ctemp);
+ 0180 0C2D              mov R16,R12
+ 0182 0E940000          xcall _send_char
+ 0186                   .dbline 59
+ 0186           ;       temp+=ctemp;
+ 0186 2C2C              mov R2,R12
+ 0188 3324              clr R3
+ 018A A20C              add R10,R2
+ 018C B31C              adc R11,R3
+ 018E                   .dbline 61
+ 018E           ; 
+ 018E           ;       if(tempr<0)tempr=32768-tempr;
+ 018E 8889              ldd R24,y+16
+ 0190 9989              ldd R25,y+17
+ 0192 8030              cpi R24,0
+ 0194 E0E0              ldi R30,0
+ 0196 9E07              cpc R25,R30
+ 0198 94F4              brge L10
+ 019A           X4:
+ 019A                   .dbline 61
+ 019A 1C01              movw R2,R24
+ 019C 4424              clr R4
+ 019E 37FC              sbrc R3,7
+ 01A0 4094              com R4
+ 01A2 5524              clr R5
+ 01A4 47FC              sbrc R4,7
+ 01A6 5094              com R5
+ 01A8 40E0              ldi R20,0
+ 01AA 50E8              ldi R21,128
+ 01AC 60E0              ldi R22,0
+ 01AE 70E0              ldi R23,0
+ 01B0 4219              sub R20,R2
+ 01B2 5309              sbc R21,R3
+ 01B4 6409              sbc R22,R4
+ 01B6 7509              sbc R23,R5
+ 01B8 1A01              movw R2,R20
+ 01BA 398A              std y+17,R3
+ 01BC 288A              std y+16,R2
+ 01BE           L10:
+ 01BE                   .dbline 62
+ 01BE           ;       ctemp=tempr>>8;
+ 01BE C888              ldd R12,y+16
+ 01C0 D988              ldd R13,y+17
+ 01C2 CD2C              mov R12,R13
+ 01C4 DD24              clr R13
+ 01C6 C7FC              sbrc R12,7
+ 01C8 D094              com R13
+ 01CA                   .dbline 63
+ 01CA           ;       send_char(ctemp);
+ 01CA 0C2D              mov R16,R12
+ 01CC 0E940000          xcall _send_char
+ 01D0                   .dbline 64
+ 01D0           ;       temp+=ctemp;
+ 01D0 2C2C              mov R2,R12
+ 01D2 3324              clr R3
+ 01D4 A20C              add R10,R2
+ 01D6 B31C              adc R11,R3
+ 01D8                   .dbline 65
+ 01D8           ;       ctemp=tempr;
+ 01D8 C888              ldd R12,y+16
+ 01DA D988              ldd R13,y+17
+ 01DC                   .dbline 66
+ 01DC           ;       send_char(ctemp);
+ 01DC 0C2D              mov R16,R12
+ 01DE 0E940000          xcall _send_char
+ 01E2                   .dbline 67
+ 01E2           ;       temp+=ctemp;
+ 01E2 2C2C              mov R2,R12
+ 01E4 3324              clr R3
+ 01E6 A20C              add R10,R2
+ 01E8 B31C              adc R11,R3
+ 01EA                   .dbline 69
+ 01EA           ; 
+ 01EA           ;       if(press<0)press=32768-press;
+ 01EA 8A89              ldd R24,y+18
+ 01EC 9B89              ldd R25,y+19
+ 01EE 8030              cpi R24,0
+ 01F0 E0E0              ldi R30,0
+ 01F2 9E07              cpc R25,R30
+ 01F4 94F4              brge L12
+ 01F6           X5:
+ 01F6                   .dbline 69
+ 01F6 1C01              movw R2,R24
+ 01F8 4424              clr R4
+ 01FA 37FC              sbrc R3,7
+ 01FC 4094              com R4
+ 01FE 5524              clr R5
+ 0200 47FC              sbrc R4,7
+ 0202 5094              com R5
+ 0204 40E0              ldi R20,0
+ 0206 50E8              ldi R21,128
+ 0208 60E0              ldi R22,0
+ 020A 70E0              ldi R23,0
+ 020C 4219              sub R20,R2
+ 020E 5309              sbc R21,R3
+ 0210 6409              sbc R22,R4
+ 0212 7509              sbc R23,R5
+ 0214 1A01              movw R2,R20
+ 0216 3B8A              std y+19,R3
+ 0218 2A8A              std y+18,R2
+ 021A           L12:
+ 021A                   .dbline 70
+ 021A           ;       ctemp=press>>8;
+ 021A CA88              ldd R12,y+18
+ 021C DB88              ldd R13,y+19
+ 021E CD2C              mov R12,R13
+ 0220 DD24              clr R13
+ 0222 C7FC              sbrc R12,7
+ 0224 D094              com R13
+ 0226                   .dbline 71
+ 0226           ;       send_char(ctemp);
+ 0226 0C2D              mov R16,R12
+ 0228 0E940000          xcall _send_char
+ 022C                   .dbline 72
+ 022C           ;       temp+=ctemp;
+ 022C 2C2C              mov R2,R12
+ 022E 3324              clr R3
+ 0230 A20C              add R10,R2
+ 0232 B31C              adc R11,R3
+ 0234                   .dbline 73
+ 0234           ;       ctemp=press;
+ 0234 CA88              ldd R12,y+18
+ 0236 DB88              ldd R13,y+19
+ 0238                   .dbline 74
+ 0238           ;       send_char(ctemp);
+ 0238 0C2D              mov R16,R12
+ 023A 0E940000          xcall _send_char
+ 023E                   .dbline 75
+ 023E           ;       temp+=ctemp;
+ 023E 2C2C              mov R2,R12
+ 0240 3324              clr R3
+ 0242 A20C              add R10,R2
+ 0244 B31C              adc R11,R3
+ 0246                   .dbline 77
+ 0246           ; 
+ 0246           ;       send_char(temp%256);
+ 0246 8501              movw R16,R10
+ 0248 1070              andi R17,0
+ 024A 0E940000          xcall _send_char
+ 024E                   .dbline 78
+ 024E           ;       send_char(0xaa);
+ 024E 0AEA              ldi R16,170
+ 0250 0E940000          xcall _send_char
+ 0254                   .dbline -2
+ 0254           L1:
+ 0254                   .dbline 0 ; func end
+ 0254 0E940000          xcall pop_xgsetF0FC
+ 0258 2296              adiw R28,2
+ 025A 0895              ret
+ 025C                   .dbsym r temp 10 i
+ 025C                   .dbsym r ctemp 12 c
+ 025C                   .dbsym l press 18 S
+ 025C                   .dbsym l tempr 16 S
+ 025C                   .dbsym l alt 14 S
+ 025C                   .dbsym l roll 12 S
+ 025C                   .dbsym l pitch 10 S
+ 025C                   .dbsym r yaw 14 S
+ 025C                   .dbend
+ 025C                   .dbfunc e UART0_ReportMotion _UART0_ReportMotion fV
+ 025C           ;           temp -> R10,R11
+ 025C           ;          ctemp -> R12
+ 025C           ;             hz -> y+24
+ 025C           ;             hy -> y+22
+ 025C           ;             hx -> y+20
+ 025C           ;             gz -> y+18
+ 025C           ;             gy -> y+16
+ 025C           ;             gx -> y+14
+ 025C           ;             az -> y+12
+ 025C           ;             ay -> y+10
+ 025C           ;             ax -> R14,R15
+                        .even
+ 025C           _UART0_ReportMotion::
+ 025C 3A93              st -y,r19
+ 025E 2A93              st -y,r18
+ 0260 0E940000          xcall push_xgsetF0FC
+ 0264 7801              movw R14,R16
+ 0266                   .dbline -1
+ 0266                   .dbline 99
+ 0266           ; }
+ 0266           ; 
+ 0266           ; /**************************实现函数********************************************
+ 0266           ; *函数原型:            void UART1_ReportMotion(int16_t ax,int16_t ay,int16_t az,int16_t gx,int16_t gy,int16_t gz,
+ 0266           ;                                       int16_t hx,int16_t hy,int16_t hz)
+ 0266           ; *功　　能:            向上位机发送当前传感器的输出值
+ 0266           ; 输入参数：
+ 0266           ;       int16_t ax  加速度 X轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t ay  加速度 Y轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t az  加速度 Z轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t gx  陀螺仪 X轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t gy  陀螺仪 Y轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t gz  陀螺仪 Z轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t hx  磁罗盘 X轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t hy  磁罗盘 Y轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       int16_t hz  磁罗盘 Z轴ADC输出 范围 ：一个有符号整型
+ 0266           ;       
+ 0266           ; 输出参数：没有        
+ 0266           ; *******************************************************************************/
+ 0266           ; void UART0_ReportMotion(int ax,int ay,int az,int gx,int gy,int gz,int hx,int hy,int hz)
+ 0266           ; {
+ 0266                   .dbline 100
+ 0266           ;       unsigned int temp=0xaF+9;
+ 0266 88EB              ldi R24,184
+ 0268 90E0              ldi R25,0
+ 026A 5C01              movw R10,R24
+ 026C                   .dbline 102
+ 026C           ;       char ctemp;
+ 026C           ;       send_char(0xa5);
+ 026C 05EA              ldi R16,165
+ 026E 0E940000          xcall _send_char
+ 0272                   .dbline 103
+ 0272           ;       send_char(0x5a);
+ 0272 0AE5              ldi R16,90
+ 0274 0E940000          xcall _send_char
+ 0278                   .dbline 104
+ 0278           ;       send_char(14+8);
+ 0278 06E1              ldi R16,22
+ 027A 0E940000          xcall _send_char
+ 027E                   .dbline 105
+ 027E           ;       send_char(0xA2);
+ 027E 02EA              ldi R16,162
+ 0280 0E940000          xcall _send_char
+ 0284                   .dbline 107
+ 0284           ; 
+ 0284           ;       if(ax<0)ax=32768-ax;
+ 0284 C701              movw R24,R14
+ 0286 8030              cpi R24,0
+ 0288 E0E0              ldi R30,0
+ 028A 9E07              cpc R25,R30
+ 028C 84F4              brge L15
+ 028E           X6:
+ 028E                   .dbline 107
+ 028E 1C01              movw R2,R24
+ 0290 4424              clr R4
+ 0292 37FC              sbrc R3,7
+ 0294 4094              com R4
+ 0296 5524              clr R5
+ 0298 47FC              sbrc R4,7
+ 029A 5094              com R5
+ 029C 40E0              ldi R20,0
+ 029E 50E8              ldi R21,128
+ 02A0 60E0              ldi R22,0
+ 02A2 70E0              ldi R23,0
+ 02A4 4219              sub R20,R2
+ 02A6 5309              sbc R21,R3
+ 02A8 6409              sbc R22,R4
+ 02AA 7509              sbc R23,R5
+ 02AC 7A01              movw R14,R20
+ 02AE           L15:
+ 02AE                   .dbline 108
+ 02AE           ;       ctemp=ax>>8;
+ 02AE 6701              movw R12,R14
+ 02B0 CD2C              mov R12,R13
+ 02B2 DD24              clr R13
+ 02B4 C7FC              sbrc R12,7
+ 02B6 D094              com R13
+ 02B8                   .dbline 109
+ 02B8           ;       send_char(ctemp);
+ 02B8 0C2D              mov R16,R12
+ 02BA 0E940000          xcall _send_char
+ 02BE                   .dbline 110
+ 02BE           ;       temp+=ctemp;
+ 02BE 2C2C              mov R2,R12
+ 02C0 3324              clr R3
+ 02C2 A20C              add R10,R2
+ 02C4 B31C              adc R11,R3
+ 02C6                   .dbline 111
+ 02C6           ;       ctemp=ax;
+ 02C6 CE2C              mov R12,R14
+ 02C8                   .dbline 112
+ 02C8           ;       send_char(ctemp);
+ 02C8 0C2D              mov R16,R12
+ 02CA 0E940000          xcall _send_char
+ 02CE                   .dbline 113
+ 02CE           ;       temp+=ctemp;
+ 02CE 2C2C              mov R2,R12
+ 02D0 3324              clr R3
+ 02D2 A20C              add R10,R2
+ 02D4 B31C              adc R11,R3
+ 02D6                   .dbline 115
+ 02D6           ; 
+ 02D6           ;       if(ay<0)ay=32768-ay;
+ 02D6 8A85              ldd R24,y+10
+ 02D8 9B85              ldd R25,y+11
+ 02DA 8030              cpi R24,0
+ 02DC E0E0              ldi R30,0
+ 02DE 9E07              cpc R25,R30
+ 02E0 94F4              brge L17
+ 02E2           X7:
+ 02E2                   .dbline 115
+ 02E2 1C01              movw R2,R24
+ 02E4 4424              clr R4
+ 02E6 37FC              sbrc R3,7
+ 02E8 4094              com R4
+ 02EA 5524              clr R5
+ 02EC 47FC              sbrc R4,7
+ 02EE 5094              com R5
+ 02F0 40E0              ldi R20,0
+ 02F2 50E8              ldi R21,128
+ 02F4 60E0              ldi R22,0
+ 02F6 70E0              ldi R23,0
+ 02F8 4219              sub R20,R2
+ 02FA 5309              sbc R21,R3
+ 02FC 6409              sbc R22,R4
+ 02FE 7509              sbc R23,R5
+ 0300 1A01              movw R2,R20
+ 0302 3B86              std y+11,R3
+ 0304 2A86              std y+10,R2
+ 0306           L17:
+ 0306                   .dbline 116
+ 0306           ;       ctemp=ay>>8;
+ 0306 CA84              ldd R12,y+10
+ 0308 DB84              ldd R13,y+11
+ 030A CD2C              mov R12,R13
+ 030C DD24              clr R13
+ 030E C7FC              sbrc R12,7
+ 0310 D094              com R13
+ 0312                   .dbline 117
+ 0312           ;       send_char(ctemp);
+ 0312 0C2D              mov R16,R12
+ 0314 0E940000          xcall _send_char
+ 0318                   .dbline 118
+ 0318           ;       temp+=ctemp;
+ 0318 2C2C              mov R2,R12
+ 031A 3324              clr R3
+ 031C A20C              add R10,R2
+ 031E B31C              adc R11,R3
+ 0320                   .dbline 119
+ 0320           ;       ctemp=ay;
+ 0320 CA84              ldd R12,y+10
+ 0322 DB84              ldd R13,y+11
+ 0324                   .dbline 120
+ 0324           ;       send_char(ctemp);
+ 0324 0C2D              mov R16,R12
+ 0326 0E940000          xcall _send_char
+ 032A                   .dbline 121
+ 032A           ;       temp+=ctemp;
+ 032A 2C2C              mov R2,R12
+ 032C 3324              clr R3
+ 032E A20C              add R10,R2
+ 0330 B31C              adc R11,R3
+ 0332                   .dbline 123
+ 0332           ; 
+ 0332           ;       if(az<0)az=32768-az;
+ 0332 8C85              ldd R24,y+12
+ 0334 9D85              ldd R25,y+13
+ 0336 8030              cpi R24,0
+ 0338 E0E0              ldi R30,0
+ 033A 9E07              cpc R25,R30
+ 033C 94F4              brge L19
+ 033E           X8:
+ 033E                   .dbline 123
+ 033E 1C01              movw R2,R24
+ 0340 4424              clr R4
+ 0342 37FC              sbrc R3,7
+ 0344 4094              com R4
+ 0346 5524              clr R5
+ 0348 47FC              sbrc R4,7
+ 034A 5094              com R5
+ 034C 40E0              ldi R20,0
+ 034E 50E8              ldi R21,128
+ 0350 60E0              ldi R22,0
+ 0352 70E0              ldi R23,0
+ 0354 4219              sub R20,R2
+ 0356 5309              sbc R21,R3
+ 0358 6409              sbc R22,R4
+ 035A 7509              sbc R23,R5
+ 035C 1A01              movw R2,R20
+ 035E 3D86              std y+13,R3
+ 0360 2C86              std y+12,R2
+ 0362           L19:
+ 0362                   .dbline 124
+ 0362           ;       ctemp=az>>8;
+ 0362 CC84              ldd R12,y+12
+ 0364 DD84              ldd R13,y+13
+ 0366 CD2C              mov R12,R13
+ 0368 DD24              clr R13
+ 036A C7FC              sbrc R12,7
+ 036C D094              com R13
+ 036E                   .dbline 125
+ 036E           ;       send_char(ctemp);
+ 036E 0C2D              mov R16,R12
+ 0370 0E940000          xcall _send_char
+ 0374                   .dbline 126
+ 0374           ;       temp+=ctemp;
+ 0374 2C2C              mov R2,R12
+ 0376 3324              clr R3
+ 0378 A20C              add R10,R2
+ 037A B31C              adc R11,R3
+ 037C                   .dbline 127
+ 037C           ;       ctemp=az;
+ 037C CC84              ldd R12,y+12
+ 037E DD84              ldd R13,y+13
+ 0380                   .dbline 128
+ 0380           ;       send_char(ctemp);
+ 0380 0C2D              mov R16,R12
+ 0382 0E940000          xcall _send_char
+ 0386                   .dbline 129
+ 0386           ;       temp+=ctemp;
+ 0386 2C2C              mov R2,R12
+ 0388 3324              clr R3
+ 038A A20C              add R10,R2
+ 038C B31C              adc R11,R3
+ 038E                   .dbline 131
+ 038E           ; 
+ 038E           ;       if(gx<0)gx=32768-gx;
+ 038E 8E85              ldd R24,y+14
+ 0390 9F85              ldd R25,y+15
+ 0392 8030              cpi R24,0
+ 0394 E0E0              ldi R30,0
+ 0396 9E07              cpc R25,R30
+ 0398 94F4              brge L21
+ 039A           X9:
+ 039A                   .dbline 131
+ 039A 1C01              movw R2,R24
+ 039C 4424              clr R4
+ 039E 37FC              sbrc R3,7
+ 03A0 4094              com R4
+ 03A2 5524              clr R5
+ 03A4 47FC              sbrc R4,7
+ 03A6 5094              com R5
+ 03A8 40E0              ldi R20,0
+ 03AA 50E8              ldi R21,128
+ 03AC 60E0              ldi R22,0
+ 03AE 70E0              ldi R23,0
+ 03B0 4219              sub R20,R2
+ 03B2 5309              sbc R21,R3
+ 03B4 6409              sbc R22,R4
+ 03B6 7509              sbc R23,R5
+ 03B8 1A01              movw R2,R20
+ 03BA 3F86              std y+15,R3
+ 03BC 2E86              std y+14,R2
+ 03BE           L21:
+ 03BE                   .dbline 132
+ 03BE           ;       ctemp=gx>>8;
+ 03BE CE84              ldd R12,y+14
+ 03C0 DF84              ldd R13,y+15
+ 03C2 CD2C              mov R12,R13
+ 03C4 DD24              clr R13
+ 03C6 C7FC              sbrc R12,7
+ 03C8 D094              com R13
+ 03CA                   .dbline 133
+ 03CA           ;       send_char(ctemp);
+ 03CA 0C2D              mov R16,R12
+ 03CC 0E940000          xcall _send_char
+ 03D0                   .dbline 134
+ 03D0           ;       temp+=ctemp;
+ 03D0 2C2C              mov R2,R12
+ 03D2 3324              clr R3
+ 03D4 A20C              add R10,R2
+ 03D6 B31C              adc R11,R3
+ 03D8                   .dbline 135
+ 03D8           ;       ctemp=gx;
+ 03D8 CE84              ldd R12,y+14
+ 03DA DF84              ldd R13,y+15
+ 03DC                   .dbline 136
+ 03DC           ;       send_char(ctemp);
+ 03DC 0C2D              mov R16,R12
+ 03DE 0E940000          xcall _send_char
+ 03E2                   .dbline 137
+ 03E2           ;       temp+=ctemp;
+ 03E2 2C2C              mov R2,R12
+ 03E4 3324              clr R3
+ 03E6 A20C              add R10,R2
+ 03E8 B31C              adc R11,R3
+ 03EA                   .dbline 139
+ 03EA           ; 
+ 03EA           ;       if(gy<0)gy=32768-gy;
+ 03EA 8889              ldd R24,y+16
+ 03EC 9989              ldd R25,y+17
+ 03EE 8030              cpi R24,0
+ 03F0 E0E0              ldi R30,0
+ 03F2 9E07              cpc R25,R30
+ 03F4 94F4              brge L23
+ 03F6           X10:
+ 03F6                   .dbline 139
+ 03F6 1C01              movw R2,R24
+ 03F8 4424              clr R4
+ 03FA 37FC              sbrc R3,7
+ 03FC 4094              com R4
+ 03FE 5524              clr R5
+ 0400 47FC              sbrc R4,7
+ 0402 5094              com R5
+ 0404 40E0              ldi R20,0
+ 0406 50E8              ldi R21,128
+ 0408 60E0              ldi R22,0
+ 040A 70E0              ldi R23,0
+ 040C 4219              sub R20,R2
+ 040E 5309              sbc R21,R3
+ 0410 6409              sbc R22,R4
+ 0412 7509              sbc R23,R5
+ 0414 1A01              movw R2,R20
+ 0416 398A              std y+17,R3
+ 0418 288A              std y+16,R2
+ 041A           L23:
+ 041A                   .dbline 140
+ 041A           ;       ctemp=gy>>8;
+ 041A C888              ldd R12,y+16
+ 041C D988              ldd R13,y+17
+ 041E CD2C              mov R12,R13
+ 0420 DD24              clr R13
+ 0422 C7FC              sbrc R12,7
+ 0424 D094              com R13
+ 0426                   .dbline 141
+ 0426           ;       send_char(ctemp);
+ 0426 0C2D              mov R16,R12
+ 0428 0E940000          xcall _send_char
+ 042C                   .dbline 142
+ 042C           ;       temp+=ctemp;
+ 042C 2C2C              mov R2,R12
+ 042E 3324              clr R3
+ 0430 A20C              add R10,R2
+ 0432 B31C              adc R11,R3
+ 0434                   .dbline 143
+ 0434           ;       ctemp=gy;
+ 0434 C888              ldd R12,y+16
+ 0436 D988              ldd R13,y+17
+ 0438                   .dbline 144
+ 0438           ;       send_char(ctemp);
+ 0438 0C2D              mov R16,R12
+ 043A 0E940000          xcall _send_char
+ 043E                   .dbline 145
+ 043E           ;       temp+=ctemp;
+ 043E 2C2C              mov R2,R12
+ 0440 3324              clr R3
+ 0442 A20C              add R10,R2
+ 0444 B31C              adc R11,R3
+ 0446                   .dbline 147
+ 0446           ; 
+ 0446           ;       if(gz<0)gz=32768-gz;
+ 0446 8A89              ldd R24,y+18
+ 0448 9B89              ldd R25,y+19
+ 044A 8030              cpi R24,0
+ 044C E0E0              ldi R30,0
+ 044E 9E07              cpc R25,R30
+ 0450 94F4              brge L25
+ 0452           X11:
+ 0452                   .dbline 147
+ 0452 1C01              movw R2,R24
+ 0454 4424              clr R4
+ 0456 37FC              sbrc R3,7
+ 0458 4094              com R4
+ 045A 5524              clr R5
+ 045C 47FC              sbrc R4,7
+ 045E 5094              com R5
+ 0460 40E0              ldi R20,0
+ 0462 50E8              ldi R21,128
+ 0464 60E0              ldi R22,0
+ 0466 70E0              ldi R23,0
+ 0468 4219              sub R20,R2
+ 046A 5309              sbc R21,R3
+ 046C 6409              sbc R22,R4
+ 046E 7509              sbc R23,R5
+ 0470 1A01              movw R2,R20
+ 0472 3B8A              std y+19,R3
+ 0474 2A8A              std y+18,R2
+ 0476           L25:
+ 0476                   .dbline 148
+ 0476           ;       ctemp=gz>>8;
+ 0476 CA88              ldd R12,y+18
+ 0478 DB88              ldd R13,y+19
+ 047A CD2C              mov R12,R13
+ 047C DD24              clr R13
+ 047E C7FC              sbrc R12,7
+ 0480 D094              com R13
+ 0482                   .dbline 149
+ 0482           ;       send_char(ctemp);
+ 0482 0C2D              mov R16,R12
+ 0484 0E940000          xcall _send_char
+ 0488                   .dbline 150
+ 0488           ;       temp+=ctemp;
+ 0488 2C2C              mov R2,R12
+ 048A 3324              clr R3
+ 048C A20C              add R10,R2
+ 048E B31C              adc R11,R3
+ 0490                   .dbline 151
+ 0490           ;       ctemp=gz;
+ 0490 CA88              ldd R12,y+18
+ 0492 DB88              ldd R13,y+19
+ 0494                   .dbline 152
+ 0494           ;       send_char(ctemp);
+ 0494 0C2D              mov R16,R12
+ 0496 0E940000          xcall _send_char
+ 049A                   .dbline 153
+ 049A           ;       temp+=ctemp;
+ 049A 2C2C              mov R2,R12
+ 049C 3324              clr R3
+ 049E A20C              add R10,R2
+ 04A0 B31C              adc R11,R3
+ 04A2                   .dbline 155
+ 04A2           ;  
+ 04A2           ;       if(hx<0)hx=32768-hx;
+ 04A2 8C89              ldd R24,y+20
+ 04A4 9D89              ldd R25,y+21
+ 04A6 8030              cpi R24,0
+ 04A8 E0E0              ldi R30,0
+ 04AA 9E07              cpc R25,R30
+ 04AC 94F4              brge L27
+ 04AE           X12:
+ 04AE                   .dbline 155
+ 04AE 1C01              movw R2,R24
+ 04B0 4424              clr R4
+ 04B2 37FC              sbrc R3,7
+ 04B4 4094              com R4
+ 04B6 5524              clr R5
+ 04B8 47FC              sbrc R4,7
+ 04BA 5094              com R5
+ 04BC 40E0              ldi R20,0
+ 04BE 50E8              ldi R21,128
+ 04C0 60E0              ldi R22,0
+ 04C2 70E0              ldi R23,0
+ 04C4 4219              sub R20,R2
+ 04C6 5309              sbc R21,R3
+ 04C8 6409              sbc R22,R4
+ 04CA 7509              sbc R23,R5
+ 04CC 1A01              movw R2,R20
+ 04CE 3D8A              std y+21,R3
+ 04D0 2C8A              std y+20,R2
+ 04D2           L27:
+ 04D2                   .dbline 156
+ 04D2           ;       ctemp=hx>>8;
+ 04D2 CC88              ldd R12,y+20
+ 04D4 DD88              ldd R13,y+21
+ 04D6 CD2C              mov R12,R13
+ 04D8 DD24              clr R13
+ 04DA C7FC              sbrc R12,7
+ 04DC D094              com R13
+ 04DE                   .dbline 157
+ 04DE           ;       send_char(ctemp);
+ 04DE 0C2D              mov R16,R12
+ 04E0 0E940000          xcall _send_char
+ 04E4                   .dbline 158
+ 04E4           ;       temp+=ctemp;
+ 04E4 2C2C              mov R2,R12
+ 04E6 3324              clr R3
+ 04E8 A20C              add R10,R2
+ 04EA B31C              adc R11,R3
+ 04EC                   .dbline 159
+ 04EC           ;       ctemp=hx;
+ 04EC CC88              ldd R12,y+20
+ 04EE DD88              ldd R13,y+21
+ 04F0                   .dbline 160
+ 04F0           ;       send_char(ctemp);
+ 04F0 0C2D              mov R16,R12
+ 04F2 0E940000          xcall _send_char
+ 04F6                   .dbline 161
+ 04F6           ;       temp+=ctemp;
+ 04F6 2C2C              mov R2,R12
+ 04F8 3324              clr R3
+ 04FA A20C              add R10,R2
+ 04FC B31C              adc R11,R3
+ 04FE                   .dbline 163
+ 04FE           ; 
+ 04FE           ;       if(hy<0)hy=32768-hy;
+ 04FE 8E89              ldd R24,y+22
+ 0500 9F89              ldd R25,y+23
+ 0502 8030              cpi R24,0
+ 0504 E0E0              ldi R30,0
+ 0506 9E07              cpc R25,R30
+ 0508 94F4              brge L29
+ 050A           X13:
+ 050A                   .dbline 163
+ 050A 1C01              movw R2,R24
+ 050C 4424              clr R4
+ 050E 37FC              sbrc R3,7
+ 0510 4094              com R4
+ 0512 5524              clr R5
+ 0514 47FC              sbrc R4,7
+ 0516 5094              com R5
+ 0518 40E0              ldi R20,0
+ 051A 50E8              ldi R21,128
+ 051C 60E0              ldi R22,0
+ 051E 70E0              ldi R23,0
+ 0520 4219              sub R20,R2
+ 0522 5309              sbc R21,R3
+ 0524 6409              sbc R22,R4
+ 0526 7509              sbc R23,R5
+ 0528 1A01              movw R2,R20
+ 052A 3F8A              std y+23,R3
+ 052C 2E8A              std y+22,R2
+ 052E           L29:
+ 052E                   .dbline 164
+ 052E           ;       ctemp=hy>>8;
+ 052E CE88              ldd R12,y+22
+ 0530 DF88              ldd R13,y+23
+ 0532 CD2C              mov R12,R13
+ 0534 DD24              clr R13
+ 0536 C7FC              sbrc R12,7
+ 0538 D094              com R13
+ 053A                   .dbline 165
+ 053A           ;       send_char(ctemp);
+ 053A 0C2D              mov R16,R12
+ 053C 0E940000          xcall _send_char
+ 0540                   .dbline 166
+ 0540           ;       temp+=ctemp;
+ 0540 2C2C              mov R2,R12
+ 0542 3324              clr R3
+ 0544 A20C              add R10,R2
+ 0546 B31C              adc R11,R3
+ 0548                   .dbline 167
+ 0548           ;       ctemp=hy;
+ 0548 CE88              ldd R12,y+22
+ 054A DF88              ldd R13,y+23
+ 054C                   .dbline 168
+ 054C           ;       send_char(ctemp);
+ 054C 0C2D              mov R16,R12
+ 054E 0E940000          xcall _send_char
+ 0552                   .dbline 169
+ 0552           ;       temp+=ctemp;
+ 0552 2C2C              mov R2,R12
+ 0554 3324              clr R3
+ 0556 A20C              add R10,R2
+ 0558 B31C              adc R11,R3
+ 055A                   .dbline 171
+ 055A           ; 
+ 055A           ;       if(hz<0)hz=32768-hz;
+ 055A 888D              ldd R24,y+24
+ 055C 998D              ldd R25,y+25
+ 055E 8030              cpi R24,0
+ 0560 E0E0              ldi R30,0
+ 0562 9E07              cpc R25,R30
+ 0564 94F4              brge L31
+ 0566           X14:
+ 0566                   .dbline 171
+ 0566 1C01              movw R2,R24
+ 0568 4424              clr R4
+ 056A 37FC              sbrc R3,7
+ 056C 4094              com R4
+ 056E 5524              clr R5
+ 0570 47FC              sbrc R4,7
+ 0572 5094              com R5
+ 0574 40E0              ldi R20,0
+ 0576 50E8              ldi R21,128
+ 0578 60E0              ldi R22,0
+ 057A 70E0              ldi R23,0
+ 057C 4219              sub R20,R2
+ 057E 5309              sbc R21,R3
+ 0580 6409              sbc R22,R4
+ 0582 7509              sbc R23,R5
+ 0584 1A01              movw R2,R20
+ 0586 398E              std y+25,R3
+ 0588 288E              std y+24,R2
+ 058A           L31:
+ 058A                   .dbline 172
+ 058A           ;       ctemp=hz>>8;
+ 058A C88C              ldd R12,y+24
+ 058C D98C              ldd R13,y+25
+ 058E CD2C              mov R12,R13
+ 0590 DD24              clr R13
+ 0592 C7FC              sbrc R12,7
+ 0594 D094              com R13
+ 0596                   .dbline 173
+ 0596           ;       send_char(ctemp);
+ 0596 0C2D              mov R16,R12
+ 0598 0E940000          xcall _send_char
+ 059C                   .dbline 174
+ 059C           ;       temp+=ctemp;
+ 059C 2C2C              mov R2,R12
+ 059E 3324              clr R3
+ 05A0 A20C              add R10,R2
+ 05A2 B31C              adc R11,R3
+ 05A4                   .dbline 175
+ 05A4           ;       ctemp=hz;
+ 05A4 C88C              ldd R12,y+24
+ 05A6 D98C              ldd R13,y+25
+ 05A8                   .dbline 176
+ 05A8           ;       send_char(ctemp);
+ 05A8 0C2D              mov R16,R12
+ 05AA 0E940000          xcall _send_char
+ 05AE                   .dbline 177
+ 05AE           ;       temp+=ctemp;
+ 05AE 2C2C              mov R2,R12
+ 05B0 3324              clr R3
+ 05B2 A20C              add R10,R2
+ 05B4 B31C              adc R11,R3
+ 05B6                   .dbline 179
+ 05B6           ; 
+ 05B6           ;       send_char(temp%256);
+ 05B6 8501              movw R16,R10
+ 05B8 1070              andi R17,0
+ 05BA 0E940000          xcall _send_char
+ 05BE                   .dbline 180
+ 05BE           ;       send_char(0xaa);
+ 05BE 0AEA              ldi R16,170
+ 05C0 0E940000          xcall _send_char
+ 05C4                   .dbline -2
+ 05C4           L14:
+ 05C4                   .dbline 0 ; func end
+ 05C4 0E940000          xcall pop_xgsetF0FC
+ 05C8 2296              adiw R28,2
+ 05CA 0895              ret
+ 05CC                   .dbsym r temp 10 i
+ 05CC                   .dbsym r ctemp 12 c
+ 05CC                   .dbsym l hz 24 I
+ 05CC                   .dbsym l hy 22 I
+ 05CC                   .dbsym l hx 20 I
+ 05CC                   .dbsym l gz 18 I
+ 05CC                   .dbsym l gy 16 I
+ 05CC                   .dbsym l gx 14 I
+ 05CC                   .dbsym l az 12 I
+ 05CC                   .dbsym l ay 10 I
+ 05CC                   .dbsym r ax 14 I
+ 05CC                   .dbend
+ 05CC           ; }

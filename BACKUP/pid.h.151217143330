@@ -1,0 +1,18 @@
+#ifndef PID_H
+#define PID_H
+
+typedef struct inc_Pid
+{
+	float Target;
+	float Kp;
+	float Ki;
+	float Kd;
+	float pre_Error;
+	float last_Error;
+	float bef_Error;
+}INC_PID;
+
+void Inc_Pid_Config(INC_PID * pid , float set_Kp , float set_Ki , float set_Kd , float set_Target);
+float Inc_Cal(INC_PID * pid , float now_Angle);
+
+#endif

@@ -1,0 +1,9 @@
+#ifndef ENCODER_H
+#define ENCODER_H
+
+void encoder_init(void);
+void timer3_init(void);
+void Get_Speed(int *Lspeed, int *Rspeed);
+void Get_Speed_PWM(int *speed, int *distance);
+
+#endif

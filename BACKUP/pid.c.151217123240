@@ -1,0 +1,31 @@
+#include "pid.h"
+#include <math.h>
+
+void PID_InitStruture(ANGLE_PID* pid,int kp,int ki,int kd,int target)
+{
+		pid->angle_P = kp;
+		pid->angle_I = ki;
+		pid->angle_D = kd;
+		pid->angle_Target = target;
+		pid->angle_Enote[0] = 0;
+		pid->angle_Enote[1] = 0;
+		pid->angle_Enote[2] = 0;
+}
+
+int angle_Pid(ANGLE_PID* pid, int angle)
+{
+    int anglePID,angle_add;
+
+	pid->angle_Enote[2] = pid->angle_Enote[1];
+
+	pid->angle_Enote[1] = pid->angle_Enote[0];
+
+	pid->angle_Enote[0] = angle - pid->angle_Target;
+
+	angle_add = pid->angle_P*(pid->angle_Enote[0]-pid->angle_Enote[1]) + pid->angle_I*pid->angle_Enote[0] + \
+			    pid->angle_D*(pid->angle_Enote[0]-2*pid->angle_Enote[1]+pid->angle_Enote[2]);
+
+	anglePID= pid->angle_Enote[1]+ angle_add;
+
+	return anglePID;
+}

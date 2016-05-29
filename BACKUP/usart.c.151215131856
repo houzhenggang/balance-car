@@ -1,0 +1,81 @@
+#include "iom128v.h"
+#include "usart.h"
+
+/****************************************
+函数名:     usart1_init 
+函数功能:   串口1口初始化 ，若UCSR1A设置倍速 ，则设置波特率时应减小一半
+形式参数:   无
+返回参数:   无
+****************************************/
+void usart1_init(void)
+{
+   //USART1 IO初始化
+   DDRD=0x08;
+   
+   //1-禁止发送和接收
+   UCSR1B = 0x00; 
+   
+   //2-倍速
+   UCSR1A =(1<<U2X1);	
+   
+   //3-8位数据、1 位停止、异步、无校验
+   UCSR1C=(1<<UCSZ11) | (1<<UCSZ10);	
+
+   //4-接收中断使能 ,接收使能 ,发送使能
+   UCSR1B =(1<<RXCIE1)|(1<<RXEN1) | (1<<TXEN1);
+  
+   //5-波特率 9600
+   UBRR1H = 0x00;
+   UBRR1L = 12;
+}
+
+/****************************************
+函数名:     send_char 
+函数功能:   发送一个字符
+形式参数:   要发送的字符
+返回参数:   无
+****************************************/
+void send_char(unsigned char sendchar)
+{
+   //1-等待发送缓冲器为空
+   while(!(UCSR1A & (1<<UDRE1)));
+   
+   //2-发送数据
+   UDR1 = sendchar;   
+}
+
+/****************************************
+函数名:     putchar 
+函数功能:   重定向printf函数 		
+形式参数:   要发送的字符
+返回参数:   无
+****************************************/
+extern int putchar(char input)
+{
+  if(input== '\n')
+  {  
+   	while(!(UCSR1A & (1<<UDRE1)));
+ 	UDR1 = '\t';
+  }   
+   
+  while(!(UCSR1A&(1<<UDRE1)));
+  UDR1=input;
+} 
+
+#pragma interrupt_handler receive_char:31
+void receive_char(void)
+{  
+   unsigned char rchar;
+   
+   //1-禁止发送和接收
+   UCSR1B=0x00;
+   
+   //2-将接收到的字符缓存在 receivechar中
+   rchar = UDR1;
+   
+   //3-允许发送和接收,接收中断使能
+   UCSR1B =(1<<RXCIE1)|(1<<RXEN1) | (1<<TXEN1);
+   
+   //4-重新发送回上位机
+   send_char(rchar);
+}

@@ -1,0 +1,17 @@
+#ifndef __PID_H
+#define __PID_H
+
+typedef struct
+{
+	float target;
+	float integral;
+	float Kp;	
+	float Ki;	
+	float Kd;
+}  pid_s, *pid_t;
+
+
+void pid_init(pid_t pid, float Kp, float Ki, float Kd);
+int pid_proc(pid_s *p, float current, float differential);
+
+#endif

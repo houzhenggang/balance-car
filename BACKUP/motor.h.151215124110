@@ -1,0 +1,15 @@
+#ifndef __MOTOR_H
+#define __MOTOR_H
+/*
+void motor_io_init(void);
+void motor_pwm_init(void);
+void motor_init(void);
+void motor_A_run(int pwm);
+void motor_B_run(int pwm);
+*/
+
+void pwm_init(void);
+void pwm_oc3a_output(unsigned char dc,unsigned char dr);
+void pwm_oc3b_output(unsigned char dc,unsigned char dr);
+
+#endif

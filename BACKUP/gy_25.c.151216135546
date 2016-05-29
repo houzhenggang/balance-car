@@ -1,0 +1,72 @@
+#include "iom128v.h"
+#include "gy_25.h"
+#include "stdio.h"
+
+unsigned int gy_buf[10]={0,0,0,0,0,0,0,0,0,0};
+
+void gy_25_init(void)
+{
+ 	//设置帧格式: 8 个数据位, 1个停止位
+	UCSR1C = (1<<UCSZ10)|(1<<UCSZ11); 
+	
+	//U2X=0时的公式计算
+    UBRR1L= (16000000/9600/16-1)%256;
+    UBRR1H= (16000000/9600/16-1)/256;
+	
+	//使能接收中断，使能接收，使能发送
+	UCSR1A = 0x00;
+	UCSR1B = (1<<RXCIE1)|(1<<RXEN1)|(1<<TXEN1);
+}
+
+// 数据发送
+void gy_25_send(unsigned char data)
+{
+     //等待发送缓冲器为空 
+     while ( !( UCSR1A & (1<<UDRE1)) );
+     // 将数据放入缓冲器，发送数据 
+     UDR1 = data;
+}
+
+void delay_us(unsigned int a)
+{
+	unsigned int b;
+	for (;a>0;a--)
+	{
+		for (b=130;b>0;b--);
+	};
+}
+
+void delay_ms(unsigned int a)
+{
+	unsigned int b;
+	for (;a>0;a--)
+	{
+		for (b=630;b>0;b--);
+	}	
+}
+
+int get_angle(void)
+{
+ 	return ((((unsigned int)gy_buf[5])<<8)+gy_buf[6]);
+}
+
+//gy_25接收中断
+#pragma interrupt_handler gy_25_receive:31
+void gy_25_receive(void)
+{  
+   static unsigned char cnt=0; 		   //接收数据计数值
+   
+   gy_buf[cnt]=UDR1;	               //保存接收内容
+   
+   if(cnt==0 && gy_buf[0]!=0xAA) 
+   {	
+		return;                        //检查帧头 
+   }   
+    
+   cnt++;  
+         					           //接收计数
+   if(cnt==8 && gy_buf[7]==0x55)          //接收完1帧
+   {    
+       cnt=0;                 		   //接收计数清0
+   } 
+}

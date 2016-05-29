@@ -1,0 +1,85 @@
+#include "pid.h"
+#include <math.h>
+
+void PID_InitStruture(PID_Struture* pid,float kp,float ki,float kd,float target)
+{
+		pid->kp = kp;
+		pid->ki = ki;
+		pid->kd = kd;
+		pid->target = target;
+		pid->enote[PRESENT] = 0;
+		pid->enote[LAST] = 0;
+		pid->enote[BEFORE] = 0;
+		pid->sumerr = 0;
+#ifdef PID_ADVENCE
+		pid->isv = 0;
+		pid->idv = 0;
+#endif
+}
+
+double PID_devCal(PID_Struture* pid,float fbv)
+{
+	double temp = pid->enote[BEFORE];
+	pid->enote[BEFORE] = pid->enote[LAST];
+	pid->enote[LAST] = pid->enote[PRESENT];
+	pid->enote[PRESENT] = (fbv - pid->target);
+	
+	pid->sumerr += pid->enote[PRESENT];
+	return temp;
+}
+
+float PID_Inc(PID_Struture* pid)
+{
+	pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]); 
+	return pid->lastcontrol;
+}
+
+float PID_Nor(PID_Struture* pid)
+{
+	pid->lastcontrol = pid->kp*pid->enote[PRESENT] + pid->ki*pid->sumerr + pid->kd*(pid->enote[PRESENT] - pid->enote[LAST]); 
+	return pid->lastcontrol;
+}
+
+
+#ifdef PID_ADVENCE
+void  PID_SetISV(PID_Struture* pid,float isv)
+{
+	pid->isv = isv;
+}
+
+float PID_Is(PID_Struture* pid)
+{
+	float a = 0.0;
+	if( fabs(pid->enote[PRESENT]) <= pid->isv ) a = 1.0;
+	
+	pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + a*pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]); 
+	return pid->lastcontrol;
+}
+
+void  PID_SetIDV(PID_Struture* pid,float idv)
+{
+	pid->idv = idv;
+}
+
+float PID_Id(PID_Struture* pid)
+{
+	float du = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]);
+	pid->lastcontrol = pid->idv * pid->lastcontrol + (1-pid->idv)*du;
+	return pid->lastcontrol;
+}
+
+float PID_recordOutput(PID_Struture* pid,float output)
+{
+	pid->output[BEFORE] = pid->output[LAST];
+	pid->output[LAST] = pid->output[PRESENT];
+	pid->output[PRESENT] += output;	
+	return pid->output[PRESENT];
+}
+
+float PID_Da(PID_Struture* pid)
+{
+	pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->output[PRESENT] - 2*pid->output[LAST] +pid->output[BEFORE]) - pid->kd*(pid->output[PRESENT] - pid->output[LAST]); 
+	return PID_recordOutput(pid,pid->lastcontrol);
+}
+
+#endif

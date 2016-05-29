@@ -1,0 +1,43 @@
+#include "iom128v.h"
+#include "encoder.h"
+
+unsigned long countLeft = 0;
+unsigned long countRight = 0;
+
+//编码器初始化
+void encoder_init(void)
+{
+ 	DDRD &= ~0x03;
+	DDRG &= ~((0x01<<3)|(0x01<<4));
+	PORTG |= (0x01<<3)|(0x01<<4);
+	EIMSK |= (1<<INT0) | (1<<INT1);
+	EICRA &= 0xF0;
+	EICRA |= (1<<ISC01) | (1<<ISC11);
+}
+
+void Get_Speed(float *speed, float *distance)
+{  
+	printf("%d\n",countLeft);
+	countLeft = 0;
+	countRight = 0;
+}
+
+//外部中断0
+#pragma interrupt_handler INT_T0:2
+void INT_T0(void)
+{  
+	if(PING & (0x01<<3))
+		countLeft--;
+	else
+		countLeft++;
+}
+
+//外部中断1 
+#pragma interrupt_handler INT_T1:3
+void INT_T1(void)
+{  
+	if(PING & (0x01<<4))
+	    countRight--;
+	else
+		countRight++;
+}

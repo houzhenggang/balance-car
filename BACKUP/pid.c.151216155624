@@ -1,0 +1,46 @@
+#include "pid.h"
+#include "stdio.h"
+
+//增量式pid初始化
+void Inc_Pid_Config(INC_PID *pid , float set_Kp , float set_Ki , float set_Kd , float set_Target)
+{
+	pid->Kp = set_Kp;
+	pid->Ki = set_Ki;
+	pid->Kd = set_Kd;
+	pid->Target = set_Target;
+	
+	pid->last_Error = 0;
+	pid->pre_Error = 0;
+	pid->bef_Error = 0;
+}
+/*
+//获取增量
+float Inc_Cal(INC_PID *pid , float now_Angle)
+{
+    float pError,iError,dError; 
+	
+	pid->bef_Error = pid->last_Error;
+	pid->last_Error = pid->pre_Error;
+	pid->pre_Error = now_Angle - pid->Target;
+	
+	pError = pid->pre_Error - pid->last_Error;
+	iError = pid->pre_Error;
+	dError = pid->pre_Error - 2*pid->last_Error +pid->bef_Error;
+
+	return pid->Kp*pError + pid->Ki*iError + pid->Kd*dError;
+}
+*/
+float Inc_Cal(INC_PID *pid , float now_Angle)
+{
+	float iError, iIncpid;
+	
+	iError = pid->Target - now_Angle;
+	
+	iIncpid = pid->Kp*iError - pid->Ki*pid->last_Error + pid->Kd*pid->pre_Error;
+	
+	pid->pre_Error = pid->last_Error;
+	
+	pid->last_Error = iError;
+	
+	return iIncpid;
+}

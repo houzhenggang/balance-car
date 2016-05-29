@@ -1,0 +1,284 @@
+#include "i2c.h"
+
+
+#define SCL_H         GPIOB->BSRR = GPIO_Pin_6 /* GPIO_SetBits(GPIOB , GPIO_Pin_6)   */
+#define SCL_L         GPIOB->BRR  = GPIO_Pin_6 /* GPIO_ResetBits(GPIOB , GPIO_Pin_6) */
+
+#define SDA_H         GPIOB->BSRR = GPIO_Pin_7 /* GPIO_SetBits(GPIOB , GPIO_Pin_7)   */
+#define SDA_L         GPIOB->BRR  = GPIO_Pin_7 /* GPIO_ResetBits(GPIOB , GPIO_Pin_7) */
+
+#define SCL_read      GPIOB->IDR  & GPIO_Pin_6 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_6) */
+#define SDA_read      GPIOB->IDR  & GPIO_Pin_7 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_7) */
+
+void I2C_Config(void)
+{
+    GPIO_InitTypeDef gpio;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+    gpio.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+    gpio.GPIO_Speed = GPIO_Speed_2MHz;
+    gpio.GPIO_Mode = GPIO_Mode_Out_OD;
+    GPIO_Init(GPIOB, &gpio);
+}
+
+static void I2C_delay(void)
+{
+    volatile int i = 7;
+    while (i)
+        i--;
+}
+
+static bool I2C_Start(void)
+{
+    SDA_H;
+    SCL_H;
+    I2C_delay();
+    if (!SDA_read)
+        return false;
+    SDA_L;
+    I2C_delay();
+    if (SDA_read)
+        return false;
+    SDA_L;
+    I2C_delay();
+    return true;
+}
+
+static void I2C_Stop(void)
+{
+    SCL_L;
+    I2C_delay();
+    SDA_L;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    SDA_H;
+    I2C_delay();
+}
+
+static void I2C_Ack(void)
+{
+    SCL_L;
+    I2C_delay();
+    SDA_L;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    SCL_L;
+    I2C_delay();
+}
+
+static void I2C_NoAck(void)
+{
+    SCL_L;
+    I2C_delay();
+    SDA_H;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    SCL_L;
+    I2C_delay();
+}
+
+static bool I2C_WaitAck(void)
+{
+    SCL_L;
+    I2C_delay();
+    SDA_H;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    if (SDA_read) {
+        SCL_L;
+        return false;
+    }
+    SCL_L;
+    return true;
+}
+
+static void I2C_SendByte(uint8_t byte)
+{
+    uint8_t i = 8;
+    while (i--) {
+        SCL_L;
+        I2C_delay();
+        if (byte & 0x80)
+            SDA_H;
+        else
+            SDA_L;
+        byte <<= 1;
+        I2C_delay();
+        SCL_H;
+        I2C_delay();
+    }
+    SCL_L;
+}
+
+static uint8_t I2C_ReceiveByte(void)
+{
+    uint8_t i = 8;
+    uint8_t byte = 0;
+
+    SDA_H;
+    while (i--) {
+        byte <<= 1;
+        SCL_L;
+        I2C_delay();
+        SCL_H;
+        I2C_delay();
+        if (SDA_read) {
+            byte |= 0x01;
+        }
+    }
+    SCL_L;
+    return byte;
+}
+
+bool i2cWriteBuffer(uint8_t addr, uint8_t reg, uint8_t len, uint8_t * data)
+{
+    int i;
+    if (!I2C_Start())
+        return false;
+    I2C_SendByte(addr << 1 | I2C_DirectionTransmitter);
+    if (!I2C_WaitAck()) {
+        I2C_Stop();
+        return false;
+    }
+    I2C_SendByte(reg);
+    I2C_WaitAck();
+    for (i = 0; i < len; i++) {
+        I2C_SendByte(data[i]);
+        if (!I2C_WaitAck()) {
+            I2C_Stop();
+            return false;
+        }
+    }
+    I2C_Stop();
+    return true;
+}
+
+int8_t i2cwrite(uint8_t addr, uint8_t reg, uint8_t len, uint8_t * data)
+{
+	if(i2cWriteBuffer(addr,reg,len,data))
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+int8_t i2cread(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
+{
+	if(i2cRead(addr,reg,len,buf))
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+bool i2cWrite(uint8_t addr, uint8_t reg, uint8_t data)
+{
+    if (!I2C_Start())
+        return false;
+    I2C_SendByte(addr << 1 | I2C_DirectionTransmitter);
+    if (!I2C_WaitAck()) {
+        I2C_Stop();
+        return false;
+    }
+    I2C_SendByte(reg);
+    I2C_WaitAck();
+    I2C_SendByte(data);
+    I2C_WaitAck();
+    I2C_Stop();
+    return true;
+}
+
+bool i2cRead(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
+{
+    if (!I2C_Start())
+        return false;
+    I2C_SendByte(addr << 1 | I2C_DirectionTransmitter);
+    if (!I2C_WaitAck()) {
+        I2C_Stop();
+        return false;
+    }
+    I2C_SendByte(reg);
+    I2C_WaitAck();
+    I2C_Start();
+    I2C_SendByte(addr << 1 | I2C_DirectionReceiver);
+    I2C_WaitAck();
+    while (len) {
+        *buf = I2C_ReceiveByte();
+        if (len == 1)
+            I2C_NoAck();
+        else
+            I2C_Ack();
+        buf++;
+        len--;
+    }
+    I2C_Stop();
+    return true;
+}
+
+uint16_t i2cGetErrorCounter(void)
+{
+    return 0;
+}
+
+/************************************************
+ 函数名:     MPU6050_ReadI2C
+ 函数功能:	  从I2C设备读取一个字节数据
+ 形参:		  读取设备地址
+ 返回参数:	  读取字节数据
+************************************************/
+u8 MPU6050_ReadI2C(u8 SlaveAddress,u8 REG_Address)
+{
+	u8 REG_data;
+	I2C_Start();                  //起始信号
+	I2C_SendByte(SlaveAddress);  //发送设备地址+写信号
+	REG_data=I2C_WaitAck();	   
+	I2C_SendByte(REG_Address);   //发送存储单元地址，从0开始
+	REG_data=I2C_WaitAck();	   
+	I2C_Start();                  //起始信号
+	I2C_SendByte(SlaveAddress+1);//发送设备地址+读信号
+	REG_data=I2C_WaitAck();	   
+ 	REG_data=I2C_ReceiveByte();		//读取一个字节,不继续再读,发送NAK,读出寄存器数据
+	I2C_Stop();	                  //停止信号
+	return REG_data;
+}
+
+/************************************************
+ 函数名:     MPU6050_WriteI2C
+ 函数功能:	  向I2C设备写入一个字节数据
+ 形参:		  写入设备地址，写入字节数据
+ 返回参数:	  无
+************************************************/
+void MPU6050_WriteI2C(u8 SlaveAddress,u8 REG_Address,u8 REG_data)
+{
+    I2C_Start();                   //起始信号
+    I2C_SendByte(SlaveAddress);   //发送设备地址+写信号
+	I2C_WaitAck();	   
+    I2C_SendByte(REG_Address);    //内部寄存器地址
+	I2C_WaitAck(); 	 										  		   
+    I2C_SendByte(REG_data);       //内部寄存器数据
+	I2C_WaitAck(); 	 										  		   
+    I2C_Stop();                    //发送停止信号
+}
+
+/************************************************
+ 函数名:     GetData
+ 函数功能:	  获取MPU6050的加速度，角速度原始值
+ 形参:		  要读取的加速度，角速度的地址
+ 返回参数:	  读取到的加速度，角速度
+************************************************/
+short GetData(u8 SlaveAddress,u8 REG_Address)
+{
+	char H,L;
+	L=MPU6050_ReadI2C(SlaveAddress,REG_Address);
+	H=MPU6050_ReadI2C(SlaveAddress,REG_Address+1);
+	return (L<<8)+H;   //合成数据
+}
+
+

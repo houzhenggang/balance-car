@@ -1,0 +1,60 @@
+#include "iom128v.h"
+#include "encoder.h"
+
+int Lcount = 0;
+int Rcount = 0;
+int Speed_rl;
+
+//编码器初始化
+void encoder_init(void)
+{
+ 	DDRD &= ~0x03;
+	DDRG &= ~((0x01<<3)|(0x01<<4));
+	PORTG |= (0x01<<3)|(0x01<<4);
+	EIMSK |= (1<<INT0) | (1<<INT1);
+	EICRA &= 0xF0;
+	EICRA |= (1<<ISC01) | (1<<ISC11);
+}
+
+void Get_Speed(int *Lspeed, int *Rspeed)
+{  
+	*Lspeed *= 0.7;		                 
+	*Lspeed += Lcount*0.3;	
+	
+	*Rspeed *= 0.7;		                 
+	*Rspeed += Rcount*0.3;	
+	
+	Lcount = 0;
+	Rcount = 0;
+}
+
+void Get_Speed_PWM(int *speed, int *distance, int speed_Targer)
+{
+    Speed_rl = (Lcount + Rcount)/2;
+	*speed *= 0.7;
+	*speed += Speed_rl*0.3;
+	*distance += (speed_Targer - *speed);
+	
+	Lcount = 0;
+	Rcount = 0;
+}
+
+//外部中断0
+#pragma interrupt_handler INT_T0:2
+void INT_T0(void)
+{  
+	if(PING & (0x01<<3))
+		Lcount--;
+	else
+		Lcount++;
+}
+
+//外部中断1 
+#pragma interrupt_handler INT_T1:3
+void INT_T1(void)
+{  
+	if(PING & (0x01<<4))
+	    Rcount++;
+	else
+		Rcount--;
+}

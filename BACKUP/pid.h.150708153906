@@ -1,0 +1,43 @@
+#ifndef PID_H
+#define PID_H
+
+#define PRESENT 2
+#define LAST		1
+#define BEFORE	0
+
+typedef struct 
+{
+	double kp;//比例系数
+	double ki;//积分系数
+	double kd;//微分系数
+	double target;//PID目标
+	double lastcontrol;//最新的输出控制值
+	double enote[3];//误差记录
+	double sumerr;
+#ifdef PID_ADVENCE
+	double isv;//积分分离阈值integration_threshold_value
+
+	double idv;//不完全微分系数Incomplete differential value，idv = T/(Tf +T),Tf惯性环节周期系数
+	double output[3];//输出记录
+#endif
+}PID_Struture;
+
+void  PID_InitStruture(PID_Struture* pid,double kp,double ki,double kd,double target);//PID结构体初始化
+double PID_devCal(PID_Struture* pid,double fbv);//计算偏差值
+double PID_Inc(PID_Struture* pid);//一般数字式PID
+double PID_Nor(PID_Struture* pid);
+
+
+#ifdef PID_ADVENCE
+void  PID_SetISV(PID_Struture* pid,double isv);//设置积分分离阈值
+double PID_Is(PID_Struture* pid);//积分分离式数字PID
+
+void  PID_SetIDV(PID_Struture* pid,double idv);//设置不完全微分系数
+double PID_Id(PID_Struture* pid);//不完全微分数字PID
+
+double PID_recordOutput(PID_Struture* pid,double output);//更新输出值
+double PID_Da(PID_Struture* pid);//微分先行数字PID
+#endif
+
+#endif
+

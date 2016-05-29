@@ -1,0 +1,22 @@
+XL
+H 1 areas 1 global symbols
+M timer.c
+A text size 24 flags 0
+dbfile timer.c
+dbfile E:\大学课程\平衡小车设计\平衡小车程序final\timer.c
+dbfunc e timer3_init 0 fV
+dbline FFFFFFFF 0
+dbline 8 0
+dbline 9 0
+dbline A 6
+dbline B C
+dbline C 18
+dbline FFFFFFFE 22
+dbline 0 22
+S _timer3_init Def0000
+T 00 00 22 24 20 92 8B 00 81 E0 80 93 8A 00 8F E7
+R 00 00 00 00
+T 0E 00 91 EC 90 93 89 00 80 93 88 00 80 91 7D 00
+R 00 00 00 00
+T 1C 00 84 60 80 93 7D 00 08 95
+R 00 00 00 00

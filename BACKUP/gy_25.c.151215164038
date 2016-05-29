@@ -1,0 +1,7 @@
+#include "iom128v.h"
+#include "gy_25.h"
+
+void gy_25_init(void)
+{
+ 	
+}

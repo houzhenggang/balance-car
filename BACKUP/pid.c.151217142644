@@ -1,0 +1,75 @@
+#include "pid.h"
+
+/*
+void PID_InitStruture(PID_Struture* pid,float kp,float ki,float kd,float target)
+{
+ 	pid->kp = kp;
+	pid->ki = ki;
+	pid->kd = kd;
+	pid->target = target;
+	pid->enote[PRESENT] = 0;
+	pid->enote[LAST] = 0;
+	pid->enote[BEFORE] = 0;
+	pid->sumerr = 0;
+}
+
+float PID_devCal(PID_Struture* pid,float fbv)
+{
+	float temp = pid->enote[BEFORE];
+	pid->enote[BEFORE] = pid->enote[LAST];
+	pid->enote[LAST] = pid->enote[PRESENT];
+	pid->enote[PRESENT] = (pid->target - fbv);
+	pid->sumerr += pid->enote[PRESENT];
+	return temp;
+}
+
+float PID_Inc(PID_Struture* pid)
+{
+	pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] \
+					   + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]); 
+	return pid->lastcontrol;
+}
+
+float PID_Nor(PID_Struture* pid)
+{
+		pid->lastcontrol = pid->kp*pid->enote[PRESENT] + pid->ki*pid->sumerr + \
+		                   pid->kd*(pid->enote[PRESENT] - pid->enote[LAST]); 
+		return pid->lastcontrol;
+}
+*/
+
+void Inc_Pid_Config(INC_PID * pid , float set_Kp , float set_Ki , float set_Kd , float set_Target)
+{
+	pid->Kp = set_Kp;
+	pid->Ki = set_Ki;
+	pid->Kd = set_Kd;
+	pid->Target = set_Target;
+	
+	pid->last_Error = 0;
+	pid->pre_Error = 0;
+	pid->bef_Error = 0;
+}
+
+float Inc_Cal(INC_PID * pid , float now_Angle)
+{
+    float pError, iError, dError, Inc; 
+	
+	pid->bef_Error = pid->last_Error;
+	pid->last_Error = pid->pre_Error;
+	pid->pre_Error = pid->Target - now_Angle;
+	
+	pError = pid->pre_Error - pid->last_Error;
+	iError = pid->pre_Error;
+	dError = pid->pre_Error - 2*pid->last_Error +pid->bef_Error;
+		
+	if(fabs(pid->pre_Error)<5)
+	{
+	   Inc = pid->Kp*pError  + pid->Kd*dError;
+	}
+	else
+	{
+	   Inc = pid->Kp*pError + pid->Ki*iError + pid->Kd*dError;
+	}
+	
+	return Inc;
+}

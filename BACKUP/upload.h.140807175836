@@ -1,0 +1,11 @@
+#ifndef ___upload_H
+#define ___upload_H
+#include "stm32f10x.h"
+void UART1_ReportIMU(s16 yaw,s16 pitch,s16 roll
+,s16 alt,s16 tempr,s16 press,s16 IMUpersec);
+
+void UART1_ReportMotion(int16_t ax,int16_t ay,int16_t az,int16_t gx,int16_t gy,int16_t gz,
+					int16_t hx,int16_t hy,int16_t hz);
+
+
+#endif

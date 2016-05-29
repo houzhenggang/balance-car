@@ -1,0 +1,1259 @@
+                        .module main.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile main.c
+                        .area data(ram, con, rel)
+ 0000                   .dbfile main.c
+ 0000           _rchar::
+ 0000                   .blkb 1
+                        .area idata
+ 0000 37                .byte 55
+                        .area data(ram, con, rel)
+ 0001                   .dbfile main.c
+ 0001                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0001                   .dbsym e rchar _rchar c
+ 0001           _loops::
+ 0001                   .blkb 2
+                        .area idata
+ 0001 0000              .word 0
+                        .area data(ram, con, rel)
+ 0003                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0003                   .dbsym e loops _loops i
+ 0003           _loopsBit::
+ 0003                   .blkb 1
+                        .area idata
+ 0003 00                .byte 0
+                        .area data(ram, con, rel)
+ 0004                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0004                   .dbsym e loopsBit _loopsBit c
+ 0004           _Kp_A::
+ 0004                   .blkb 2
+                        .area idata
+ 0004 A00F              .word 4000
+                        .area data(ram, con, rel)
+ 0006                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0006                   .dbsym e Kp_A _Kp_A i
+ 0006           _Ki_A::
+ 0006                   .blkb 2
+                        .area idata
+ 0006 2C01              .word 300
+                        .area data(ram, con, rel)
+ 0008                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0008                   .dbsym e Ki_A _Ki_A i
+ 0008           _Kd_A::
+ 0008                   .blkb 2
+                        .area idata
+ 0008 9411              .word 4500
+                        .area data(ram, con, rel)
+ 000A                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 000A                   .dbsym e Kd_A _Kd_A i
+ 000A           _PWM_L::
+ 000A                   .blkb 2
+                        .area idata
+ 000A 0000              .word 0
+                        .area data(ram, con, rel)
+ 000C                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 000C                   .dbsym e PWM_L _PWM_L I
+ 000C           _PWM_R::
+ 000C                   .blkb 2
+                        .area idata
+ 000C 0000              .word 0
+                        .area data(ram, con, rel)
+ 000E                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 000E                   .dbsym e PWM_R _PWM_R I
+ 000E           _turn_flag::
+ 000E                   .blkb 1
+                        .area idata
+ 000E 00                .byte 0
+                        .area data(ram, con, rel)
+ 000F                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 000F                   .dbsym e turn_flag _turn_flag c
+ 000F           _PWM_Lturn::
+ 000F                   .blkb 2
+                        .area idata
+ 000F 0000              .word 0
+                        .area data(ram, con, rel)
+ 0011                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0011                   .dbsym e PWM_Lturn _PWM_Lturn I
+ 0011           _PWM_Rturn::
+ 0011                   .blkb 2
+                        .area idata
+ 0011 0000              .word 0
+                        .area data(ram, con, rel)
+ 0013                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0013                   .dbsym e PWM_Rturn _PWM_Rturn I
+ 0013           _Ksp::
+ 0013                   .blkb 4
+                        .area idata
+ 0013 0000C040          .word 0x0,0x40c0
+                        .area data(ram, con, rel)
+ 0017                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0017                   .dbsym e Ksp _Ksp D
+ 0017           _Ksn::
+ 0017                   .blkb 4
+                        .area idata
+ 0017 CDCC4C3E          .word 0xcccd,0x3e4c
+                        .area data(ram, con, rel)
+ 001B                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 001B                   .dbsym e Ksn _Ksn D
+ 001B           _i::
+ 001B                   .blkb 1
+                        .area idata
+ 001B 00                .byte 0
+                        .area data(ram, con, rel)
+ 001C                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 001C                   .dbsym e i _i c
+ 001C           _j::
+ 001C                   .blkb 1
+                        .area idata
+ 001C 00                .byte 0
+                        .area data(ram, con, rel)
+ 001D                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 001D                   .dbsym e j _j c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0000                   .dbfunc e main _main fI
+                        .even
+ 0000           _main::
+ 0000 2697              sbiw R28,6
+ 0002                   .dbline -1
+ 0002                   .dbline 59
+ 0002           ; #include "iom128v.h"
+ 0002           ; #include "stdio.h"
+ 0002           ; #include "math.h"
+ 0002           ; #include "macros.h"
+ 0002           ; #include "motor.h"
+ 0002           ; #include "usart.h"
+ 0002           ; #include "encoder.h"
+ 0002           ; #include "mpu6050.h"
+ 0002           ; #include "i2c.h"
+ 0002           ; #include "pid.h"
+ 0002           ; 
+ 0002           ; //------------------------------------------------
+ 0002           ; //串口变量
+ 0002           ; //------------------------------------------------
+ 0002           ; #define  FARWARD  '1'
+ 0002           ; #define  BACKWARD '2'
+ 0002           ; #define  LEFT     '3'
+ 0002           ; #define  RIGHT    '4'
+ 0002           ; #define  STOP     '5'
+ 0002           ; #define  FIX      '6'
+ 0002           ; #define  WAIT     '7'
+ 0002           ; unsigned char rchar = WAIT;
+ 0002           ; 
+ 0002           ; //------------------------------------------------
+ 0002           ; //循环变量
+ 0002           ; //------------------------------------------------
+ 0002           ; unsigned int loops = 0;
+ 0002           ; unsigned char loopsBit = 0;
+ 0002           ; 
+ 0002           ; //------------------------------------------------
+ 0002           ; //平衡变量
+ 0002           ; //------------------------------------------------
+ 0002           ; unsigned int Kp_A=4000, Ki_A=300, Kd_A=4500;
+ 0002           ; PID_ANGLGE PID_angle; 
+ 0002           ; float angle_Targer;
+ 0002           ; float fix_angle;
+ 0002           ; float angle, angle_dot;
+ 0002           ; int PWM_Balance;
+ 0002           ; int PWM_L=0,PWM_R=0;
+ 0002           ; 
+ 0002           ; //----------------------------------- 0-------------
+ 0002           ; //转动变量
+ 0002           ; //------------------------------------------------
+ 0002           ; unsigned char turn_flag = 0;
+ 0002           ; int PWM_Lturn=0;
+ 0002           ; int PWM_Rturn=0;
+ 0002           ; 
+ 0002           ; //------------------------------------------------
+ 0002           ; //运动变量
+ 0002           ; //------------------------------------------------
+ 0002           ; int speed, distance;
+ 0002           ; float Ksp=6, Ksn=0.2;
+ 0002           ; 
+ 0002           ; unsigned char rec_buf[3][10];
+ 0002           ; unsigned char i=0 , j=0;
+ 0002           ; unsigned int pid_num;
+ 0002           ; 
+ 0002           ; int main(void)
+ 0002           ; {     
+ 0002                   .dbline 60
+ 0002           ;       usart0_init(9600);
+ 0002 00E8              ldi R16,9600
+ 0004 15E2              ldi R17,37
+ 0006 0E940000          xcall _usart0_init
+ 000A                   .dbline 61
+ 000A           ;       printf("\tusart0 init OK!\n");
+ 000A 00E0              ldi R16,<L4
+ 000C 10E0              ldi R17,>L4
+ 000E 0E940000          xcall _printf
+ 0012                   .dbline 63
+ 0012           ;       
+ 0012           ;       motor_init();
+ 0012 0E940000          xcall _motor_init
+ 0016                   .dbline 65
+ 0016           ;       
+ 0016           ;       encoder_init();
+ 0016 0E940000          xcall _encoder_init
+ 001A                   .dbline 67
+ 001A           ;       
+ 001A           ;       MPU6050_Config();
+ 001A 0E940000          xcall _MPU6050_Config
+ 001E                   .dbline 69
+ 001E           ;       
+ 001E           ;       Get_Angle(&angle, &angle_dot);
+ 001E 20E0              ldi R18,<_angle_dot
+ 0020 30E0              ldi R19,>_angle_dot
+ 0022 00E0              ldi R16,<_angle
+ 0024 10E0              ldi R17,>_angle
+ 0026 0E940000          xcall _Get_Angle
+ 002A                   .dbline 70
+ 002A           ;       fix_angle = angle;
+ 002A 40902C00          lds R4,_angle+2
+ 002E 50902D00          lds R5,_angle+2+1
+ 0032 20902A00          lds R2,_angle
+ 0036 30902B00          lds R3,_angle+1
+ 003A 30922F00          sts _fix_angle+1,R3
+ 003E 20922E00          sts _fix_angle,R2
+ 0042 50923100          sts _fix_angle+2+1,R5
+ 0046 40923000          sts _fix_angle+2,R4
+ 004A                   .dbline 72
+ 004A           ;       
+ 004A           ;       PID_angle_init(&PID_angle, Kp_A, Ki_A, Kd_A, angle_Targer);     
+ 004A 20913400          lds R18,_angle_Targer+2
+ 004E 30913500          lds R19,_angle_Targer+2+1
+ 0052 00913200          lds R16,_angle_Targer
+ 0056 10913300          lds R17,_angle_Targer+1
+ 005A 0E940000          xcall fpint
+ 005E 1D83              std y+5,R17
+ 0060 0C83              std y+4,R16
+ 0062 20900800          lds R2,_Kd_A
+ 0066 30900900          lds R3,_Kd_A+1
+ 006A 3B82              std y+3,R3
+ 006C 2A82              std y+2,R2
+ 006E 20900600          lds R2,_Ki_A
+ 0072 30900700          lds R3,_Ki_A+1
+ 0076 3982              std y+1,R3
+ 0078 2882              std y+0,R2
+ 007A 20910400          lds R18,_Kp_A
+ 007E 30910500          lds R19,_Kp_A+1
+ 0082 00E0              ldi R16,<_PID_angle
+ 0084 10E0              ldi R17,>_PID_angle
+ 0086 0E940000          xcall _PID_angle_init
+ 008A                   .dbline 74
+ 008A           ;       
+ 008A           ;       timer3_init();
+ 008A 0E940000          xcall _timer3_init
+ 008E ACC1              xjmp L6
+ 0090           L5:
+ 0090                   .dbline 77
+ 0090           ;       
+ 0090           ;       while(1)
+ 0090           ;       {       
+ 0090                   .dbline 82
+ 0090           ;               //--------------------------------------------------------------------
+ 0090           ;               //3ms循环一次
+ 0090           ;               //进行角度平衡，使小车可以站稳
+ 0090           ;               //--------------------------------------------------------------------
+ 0090           ;               if(loopsBit & 0x01)
+ 0090 20900300          lds R2,_loopsBit
+ 0094 20FE              sbrs R2,0
+ 0096 46C0              rjmp L8
+ 0098           X0:
+ 0098                   .dbline 83
+ 0098           ;               {          
+ 0098                   .dbline 84
+ 0098           ;                  loopsBit &= ~(0x01);
+ 0098 822D              mov R24,R2
+ 009A 8E7F              andi R24,254
+ 009C 80930300          sts _loopsBit,R24
+ 00A0                   .dbline 87
+ 00A0           ;                  
+ 00A0           ;                  //获取当前角度，角速度
+ 00A0           ;                  Get_Angle(&angle, &angle_dot);       
+ 00A0 20E0              ldi R18,<_angle_dot
+ 00A2 30E0              ldi R19,>_angle_dot
+ 00A4 00E0              ldi R16,<_angle
+ 00A6 10E0              ldi R17,>_angle
+ 00A8 0E940000          xcall _Get_Angle
+ 00AC                   .dbline 90
+ 00AC           ;                  
+ 00AC           ;                  //通过位置式PID得到小车保存角度为零所需要的PWM
+ 00AC           ;                  PWM_Balance = PID_Proc(&PID_angle, angle, angle_dot);
+ 00AC 40902800          lds R4,_angle_dot+2
+ 00B0 50902900          lds R5,_angle_dot+2+1
+ 00B4 20902600          lds R2,_angle_dot
+ 00B8 30902700          lds R3,_angle_dot+1
+ 00BC 2A82              std y+2,R2
+ 00BE 3B82              std y+3,R3
+ 00C0 4C82              std y+4,R4
+ 00C2 5D82              std y+5,R5
+ 00C4 40902C00          lds R4,_angle+2
+ 00C8 50902D00          lds R5,_angle+2+1
+ 00CC 20902A00          lds R2,_angle
+ 00D0 30902B00          lds R3,_angle+1
+ 00D4 4882              std y+0,R4
+ 00D6 5982              std y+1,R5
+ 00D8 9101              movw R18,R2
+ 00DA 00E0              ldi R16,<_PID_angle
+ 00DC 10E0              ldi R17,>_PID_angle
+ 00DE 0E940000          xcall _PID_Proc
+ 00E2 10932500          sts _PWM_Balance+1,R17
+ 00E6 00932400          sts _PWM_Balance,R16
+ 00EA                   .dbline 93
+ 00EA           ;                  
+ 00EA           ;                  //调整左右电机PWM输出
+ 00EA           ;                  PWM_L = (PWM_Balance + PWM_Lturn); 
+ 00EA 20900F00          lds R2,_PWM_Lturn
+ 00EE 30901000          lds R3,_PWM_Lturn+1
+ 00F2 2801              movw R4,R16
+ 00F4 420C              add R4,R2
+ 00F6 531C              adc R5,R3
+ 00F8 50920B00          sts _PWM_L+1,R5
+ 00FC 40920A00          sts _PWM_L,R4
+ 0100                   .dbline 94
+ 0100           ;                  PWM_R = (PWM_Balance + PWM_Rturn);   
+ 0100 20901100          lds R2,_PWM_Rturn
+ 0104 30901200          lds R3,_PWM_Rturn+1
+ 0108 2801              movw R4,R16
+ 010A 420C              add R4,R2
+ 010C 531C              adc R5,R3
+ 010E 50920D00          sts _PWM_R+1,R5
+ 0112 40920C00          sts _PWM_R,R4
+ 0116                   .dbline 97
+ 0116           ;                  
+ 0116           ;                  //输出PWM
+ 0116           ;                  PWM_Output(PWM_L, PWM_R);       
+ 0116 9201              movw R18,R4
+ 0118 00910A00          lds R16,_PWM_L
+ 011C 10910B00          lds R17,_PWM_L+1
+ 0120 0E940000          xcall _PWM_Output
+ 0124                   .dbline 98
+ 0124           ;               }
+ 0124           L8:
+ 0124                   .dbline 104
+ 0124           ;               
+ 0124           ;               //--------------------------------------------------------------------
+ 0124           ;               //10ms循环一次
+ 0124           ;               //进行速度平衡，使小车可以行走
+ 0124           ;               //--------------------------------------------------------------------
+ 0124           ;               if(loopsBit & 0x02)
+ 0124 20900300          lds R2,_loopsBit
+ 0128 21FE              sbrs R2,1
+ 012A 63C0              rjmp L10
+ 012C           X1:
+ 012C                   .dbline 105
+ 012C           ;               {
+ 012C                   .dbline 106
+ 012C           ;                  loopsBit &= ~(0x02);
+ 012C 822D              mov R24,R2
+ 012E 8D7F              andi R24,253
+ 0130 80930300          sts _loopsBit,R24
+ 0134                   .dbline 109
+ 0134           ;                  
+ 0134           ;                  //获取当前速度，位移
+ 0134           ;                  Get_Speed(&speed, &distance);
+ 0134 20E0              ldi R18,<_distance
+ 0136 30E0              ldi R19,>_distance
+ 0138 00E0              ldi R16,<_speed
+ 013A 10E0              ldi R17,>_speed
+ 013C 0E940000          xcall _Get_Speed
+ 0140                   .dbline 112
+ 0140           ;                  
+ 0140           ;                  //通过速度和位移调整小车平衡需要的PWM
+ 0140           ;                  PWM_Balance += Ksp*speed + Ksn*distance;
+ 0140 00912400          lds R16,_PWM_Balance
+ 0144 10912500          lds R17,_PWM_Balance+1
+ 0148 0E940000          xcall int2fp
+ 014C 1801              movw R2,R16
+ 014E 2901              movw R4,R18
+ 0150 80901500          lds R8,_Ksp+2
+ 0154 90901600          lds R9,_Ksp+2+1
+ 0158 60901300          lds R6,_Ksp
+ 015C 70901400          lds R7,_Ksp+1
+ 0160 00912200          lds R16,_speed
+ 0164 10912300          lds R17,_speed+1
+ 0168 0E940000          xcall int2fp
+ 016C 3A93              st -y,R19
+ 016E 2A93              st -y,R18
+ 0170 1A93              st -y,R17
+ 0172 0A93              st -y,R16
+ 0174 8301              movw R16,R6
+ 0176 9401              movw R18,R8
+ 0178 0E940000          xcall fpmule2
+ 017C 3801              movw R6,R16
+ 017E 4901              movw R8,R18
+ 0180 60911900          lds R22,_Ksn+2
+ 0184 70911A00          lds R23,_Ksn+2+1
+ 0188 40911700          lds R20,_Ksn
+ 018C 50911800          lds R21,_Ksn+1
+ 0190 00912000          lds R16,_distance
+ 0194 10912100          lds R17,_distance+1
+ 0198 0E940000          xcall int2fp
+ 019C 3A93              st -y,R19
+ 019E 2A93              st -y,R18
+ 01A0 1A93              st -y,R17
+ 01A2 0A93              st -y,R16
+ 01A4 8A01              movw R16,R20
+ 01A6 9B01              movw R18,R22
+ 01A8 0E940000          xcall fpmule2x
+ 01AC 8301              movw R16,R6
+ 01AE 9401              movw R18,R8
+ 01B0 0E940000          xcall fpadd2x
+ 01B4 8101              movw R16,R2
+ 01B6 9201              movw R18,R4
+ 01B8 0E940000          xcall fpadd2
+ 01BC 0E940000          xcall fpint
+ 01C0 10932500          sts _PWM_Balance+1,R17
+ 01C4 00932400          sts _PWM_Balance,R16
+ 01C8                   .dbline 115
+ 01C8           ;                  
+ 01C8           ;                  //调整左右电机PWM输出
+ 01C8           ;                  PWM_L = PWM_Balance; 
+ 01C8 1801              movw R2,R16
+ 01CA 30920B00          sts _PWM_L+1,R3
+ 01CE 20920A00          sts _PWM_L,R2
+ 01D2                   .dbline 116
+ 01D2           ;                  PWM_R = PWM_Balance; 
+ 01D2 30920D00          sts _PWM_R+1,R3
+ 01D6 20920C00          sts _PWM_R,R2
+ 01DA                   .dbline 119
+ 01DA           ;                  
+ 01DA           ;                  //速出PWM
+ 01DA           ;                  PWM_Output(PWM_L, PWM_R);
+ 01DA 20910C00          lds R18,_PWM_R
+ 01DE 30910D00          lds R19,_PWM_R+1
+ 01E2 00910A00          lds R16,_PWM_L
+ 01E6 10910B00          lds R17,_PWM_L+1
+ 01EA 0E940000          xcall _PWM_Output
+ 01EE                   .dbline 122
+ 01EE           ;                  
+ 01EE           ;                  //编码器计数归零
+ 01EE           ;                  Clean_Speed();
+ 01EE 0E940000          xcall _Clean_Speed
+ 01F2                   .dbline 123
+ 01F2           ;               }
+ 01F2           L10:
+ 01F2                   .dbline 129
+ 01F2           ;               
+ 01F2           ;               //--------------------------------------------------------------------
+ 01F2           ;               //50ms循环一次
+ 01F2           ;               //进行转向控制，转动一定角度可以停下
+ 01F2           ;               //--------------------------------------------------------------------
+ 01F2           ;               if(loopsBit & 0x04)
+ 01F2 20900300          lds R2,_loopsBit
+ 01F6 22FE              sbrs R2,2
+ 01F8 19C0              rjmp L12
+ 01FA           X2:
+ 01FA                   .dbline 130
+ 01FA           ;               {
+ 01FA                   .dbline 131
+ 01FA           ;                  loopsBit &= ~(0x04);
+ 01FA 822D              mov R24,R2
+ 01FC 8B7F              andi R24,251
+ 01FE 80930300          sts _loopsBit,R24
+ 0202                   .dbline 134
+ 0202           ;                  
+ 0202           ;                  //转动1.5s后停止转动
+ 0202           ;                  if(turn_flag<15)
+ 0202 80910E00          lds R24,_turn_flag
+ 0206 8F30              cpi R24,15
+ 0208 20F4              brsh L14
+ 020A           X3:
+ 020A                   .dbline 135
+ 020A           ;                  {
+ 020A                   .dbline 136
+ 020A           ;                     turn_flag++;
+ 020A 8F5F              subi R24,255    ; addi 1
+ 020C 80930E00          sts _turn_flag,R24
+ 0210                   .dbline 137
+ 0210           ;                  }
+ 0210 0DC0              xjmp L15
+ 0212           L14:
+ 0212                   .dbline 139
+ 0212           ;                  else
+ 0212           ;                  {
+ 0212                   .dbline 140
+ 0212           ;                         turn_flag = 15;
+ 0212 8FE0              ldi R24,15
+ 0214 80930E00          sts _turn_flag,R24
+ 0218                   .dbline 141
+ 0218           ;                     PWM_Lturn = 0;
+ 0218 2224              clr R2
+ 021A 3324              clr R3
+ 021C 30921000          sts _PWM_Lturn+1,R3
+ 0220 20920F00          sts _PWM_Lturn,R2
+ 0224                   .dbline 142
+ 0224           ;                         PWM_Rturn = 0;
+ 0224 30921200          sts _PWM_Rturn+1,R3
+ 0228 20921100          sts _PWM_Rturn,R2
+ 022C                   .dbline 143
+ 022C           ;                  }
+ 022C           L15:
+ 022C                   .dbline 144
+ 022C           ;               }
+ 022C           L12:
+ 022C                   .dbline 151
+ 022C           ;               
+ 022C           ;               //--------------------------------------------------------------------
+ 022C           ;               //100ms循环一次
+ 022C           ;               //串口接收，接收各种控制小车的命令
+ 022C           ;               //--------------------------------------------------------------------
+ 022C           ;               
+ 022C           ;               if(loopsBit & 0x08)
+ 022C 20900300          lds R2,_loopsBit
+ 0230 23FE              sbrs R2,3
+ 0232 DAC0              rjmp L16
+ 0234           X4:
+ 0234                   .dbline 152
+ 0234           ;               {
+ 0234                   .dbline 153
+ 0234           ;                  loopsBit &= ~(0x08);
+ 0234 822D              mov R24,R2
+ 0236 877F              andi R24,247
+ 0238 80930300          sts _loopsBit,R24
+ 023C                   .dbline 154
+ 023C           ;                  loops = 0;           
+ 023C 2224              clr R2
+ 023E 3324              clr R3
+ 0240 30920200          sts _loops+1,R3
+ 0244 20920100          sts _loops,R2
+ 0248                   .dbline 157
+ 0248           ;                  
+ 0248           ;                  //前进
+ 0248           ;                  if(rchar == FARWARD)
+ 0248 80910000          lds R24,_rchar
+ 024C 8133              cpi R24,49
+ 024E 69F5              brne L18
+ 0250           X5:
+ 0250                   .dbline 158
+ 0250           ;                  {
+ 0250                   .dbline 160
+ 0250           ;                          //目标倾角每次减少0.005弧度，往前倾
+ 0250           ;                          angle_Targer -= 0.005;
+ 0250 40903400          lds R4,_angle_Targer+2
+ 0254 50903500          lds R5,_angle_Targer+2+1
+ 0258 20903200          lds R2,_angle_Targer
+ 025C 30903300          lds R3,_angle_Targer+1
+ 0260 00E0              ldi R16,<L20
+ 0262 10E0              ldi R17,>L20
+ 0264 0E940000          xcall elpm32
+ 0268 3A93              st -y,R19
+ 026A 2A93              st -y,R18
+ 026C 1A93              st -y,R17
+ 026E 0A93              st -y,R16
+ 0270 8101              movw R16,R2
+ 0272 9201              movw R18,R4
+ 0274 0E940000          xcall fpsub2
+ 0278 10933300          sts _angle_Targer+1,R17
+ 027C 00933200          sts _angle_Targer,R16
+ 0280 30933500          sts _angle_Targer+2+1,R19
+ 0284 20933400          sts _angle_Targer+2,R18
+ 0288                   .dbline 161
+ 0288           ;                          PID_angle.target = angle_Targer;
+ 0288 1801              movw R2,R16
+ 028A 2901              movw R4,R18
+ 028C 30923700          sts _PID_angle+1,R3
+ 0290 20923600          sts _PID_angle,R2
+ 0294 50923900          sts _PID_angle+2+1,R5
+ 0298 40923800          sts _PID_angle+2,R4
+ 029C                   .dbline 162
+ 029C           ;                          printf("angle_Targer:%f\n", angle_Targer);
+ 029C 2883              std y+0,R18
+ 029E 3983              std y+1,R19
+ 02A0 9801              movw R18,R16
+ 02A2 00E0              ldi R16,<L21
+ 02A4 10E0              ldi R17,>L21
+ 02A6 0E940000          xcall _printf
+ 02AA                   .dbline 163
+ 02AA           ;                  }
+ 02AA           L18:
+ 02AA                   .dbline 166
+ 02AA           ;                       
+ 02AA           ;                  //后退
+ 02AA           ;                  if(rchar == BACKWARD)
+ 02AA 80910000          lds R24,_rchar
+ 02AE 8233              cpi R24,50
+ 02B0 69F5              brne L22
+ 02B2           X6:
+ 02B2                   .dbline 167
+ 02B2           ;                  {
+ 02B2                   .dbline 169
+ 02B2           ;              //目标倾角每次增加0.005弧度，往后仰
+ 02B2           ;                          angle_Targer += 0.005;
+ 02B2 40903400          lds R4,_angle_Targer+2
+ 02B6 50903500          lds R5,_angle_Targer+2+1
+ 02BA 20903200          lds R2,_angle_Targer
+ 02BE 30903300          lds R3,_angle_Targer+1
+ 02C2 00E0              ldi R16,<L20
+ 02C4 10E0              ldi R17,>L20
+ 02C6 0E940000          xcall elpm32
+ 02CA 3A93              st -y,R19
+ 02CC 2A93              st -y,R18
+ 02CE 1A93              st -y,R17
+ 02D0 0A93              st -y,R16
+ 02D2 8101              movw R16,R2
+ 02D4 9201              movw R18,R4
+ 02D6 0E940000          xcall fpadd2
+ 02DA 10933300          sts _angle_Targer+1,R17
+ 02DE 00933200          sts _angle_Targer,R16
+ 02E2 30933500          sts _angle_Targer+2+1,R19
+ 02E6 20933400          sts _angle_Targer+2,R18
+ 02EA                   .dbline 170
+ 02EA           ;                          PID_angle.target = angle_Targer;
+ 02EA 1801              movw R2,R16
+ 02EC 2901              movw R4,R18
+ 02EE 30923700          sts _PID_angle+1,R3
+ 02F2 20923600          sts _PID_angle,R2
+ 02F6 50923900          sts _PID_angle+2+1,R5
+ 02FA 40923800          sts _PID_angle+2,R4
+ 02FE                   .dbline 171
+ 02FE           ;                  printf("angle_Targer：%f\n", angle_Targer);
+ 02FE 2883              std y+0,R18
+ 0300 3983              std y+1,R19
+ 0302 9801              movw R18,R16
+ 0304 00E0              ldi R16,<L24
+ 0306 10E0              ldi R17,>L24
+ 0308 0E940000          xcall _printf
+ 030C                   .dbline 172
+ 030C           ;                  }
+ 030C           L22:
+ 030C                   .dbline 174
+ 030C           ;                  
+ 030C           ;                  if(rchar == LEFT)
+ 030C 80910000          lds R24,_rchar
+ 0310 8333              cpi R24,51
+ 0312 79F4              brne L25
+ 0314           X7:
+ 0314                   .dbline 175
+ 0314           ;                  {
+ 0314                   .dbline 177
+ 0314           ;                          //左轮PWM增加,右轮不动
+ 0314           ;                          PWM_Lturn = 150;
+ 0314 86E9              ldi R24,150
+ 0316 90E0              ldi R25,0
+ 0318 90931000          sts _PWM_Lturn+1,R25
+ 031C 80930F00          sts _PWM_Lturn,R24
+ 0320                   .dbline 178
+ 0320           ;                          PWM_Rturn = 0;
+ 0320 2224              clr R2
+ 0322 3324              clr R3
+ 0324 30921200          sts _PWM_Rturn+1,R3
+ 0328 20921100          sts _PWM_Rturn,R2
+ 032C                   .dbline 179
+ 032C           ;                          turn_flag = 1;
+ 032C 81E0              ldi R24,1
+ 032E 80930E00          sts _turn_flag,R24
+ 0332                   .dbline 180
+ 0332           ;                  }
+ 0332           L25:
+ 0332                   .dbline 182
+ 0332           ;                  
+ 0332           ;                  if(rchar == RIGHT)
+ 0332 80910000          lds R24,_rchar
+ 0336 8433              cpi R24,52
+ 0338 79F4              brne L27
+ 033A           X8:
+ 033A                   .dbline 183
+ 033A           ;                  {
+ 033A                   .dbline 185
+ 033A           ;                          //右轮PWM增加，左轮不动
+ 033A           ;                          PWM_Lturn = 0;
+ 033A 2224              clr R2
+ 033C 3324              clr R3
+ 033E 30921000          sts _PWM_Lturn+1,R3
+ 0342 20920F00          sts _PWM_Lturn,R2
+ 0346                   .dbline 186
+ 0346           ;                          PWM_Rturn = 150;
+ 0346 86E9              ldi R24,150
+ 0348 90E0              ldi R25,0
+ 034A 90931200          sts _PWM_Rturn+1,R25
+ 034E 80931100          sts _PWM_Rturn,R24
+ 0352                   .dbline 187
+ 0352           ;                          turn_flag = 1;
+ 0352 81E0              ldi R24,1
+ 0354 80930E00          sts _turn_flag,R24
+ 0358                   .dbline 188
+ 0358           ;                  }
+ 0358           L27:
+ 0358                   .dbline 190
+ 0358           ;                  
+ 0358           ;                  if(rchar == STOP)
+ 0358 80910000          lds R24,_rchar
+ 035C 8533              cpi R24,53
+ 035E 39F5              brne L29
+ 0360           X9:
+ 0360                   .dbline 191
+ 0360           ;                  {
+ 0360                   .dbline 193
+ 0360           ;                          //使目标倾角回到平衡角度
+ 0360           ;                          angle_Targer = fix_angle;
+ 0360 40903000          lds R4,_fix_angle+2
+ 0364 50903100          lds R5,_fix_angle+2+1
+ 0368 20902E00          lds R2,_fix_angle
+ 036C 30902F00          lds R3,_fix_angle+1
+ 0370 30923300          sts _angle_Targer+1,R3
+ 0374 20923200          sts _angle_Targer,R2
+ 0378 50923500          sts _angle_Targer+2+1,R5
+ 037C 40923400          sts _angle_Targer+2,R4
+ 0380                   .dbline 194
+ 0380           ;                          PID_angle.target = angle_Targer;
+ 0380 40903400          lds R4,_angle_Targer+2
+ 0384 50903500          lds R5,_angle_Targer+2+1
+ 0388 20903200          lds R2,_angle_Targer
+ 038C 30903300          lds R3,_angle_Targer+1
+ 0390 30923700          sts _PID_angle+1,R3
+ 0394 20923600          sts _PID_angle,R2
+ 0398 50923900          sts _PID_angle+2+1,R5
+ 039C 40923800          sts _PID_angle+2,R4
+ 03A0                   .dbline 195
+ 03A0           ;                          printf("angle_Targer：%f\n", angle_Targer);
+ 03A0 4882              std y+0,R4
+ 03A2 5982              std y+1,R5
+ 03A4 9101              movw R18,R2
+ 03A6 00E0              ldi R16,<L24
+ 03A8 10E0              ldi R17,>L24
+ 03AA 0E940000          xcall _printf
+ 03AE                   .dbline 196
+ 03AE           ;                  }
+ 03AE           L29:
+ 03AE                   .dbline 198
+ 03AE           ;                  
+ 03AE           ;                  if(rchar == FIX)
+ 03AE 80910000          lds R24,_rchar
+ 03B2 8633              cpi R24,54
+ 03B4 81F4              brne L31
+ 03B6           X10:
+ 03B6                   .dbline 199
+ 03B6           ;                  {
+ 03B6                   .dbline 201
+ 03B6           ;                          //设定平衡角
+ 03B6           ;                          fix_angle = angle;
+ 03B6 40902C00          lds R4,_angle+2
+ 03BA 50902D00          lds R5,_angle+2+1
+ 03BE 20902A00          lds R2,_angle
+ 03C2 30902B00          lds R3,_angle+1
+ 03C6 30922F00          sts _fix_angle+1,R3
+ 03CA 20922E00          sts _fix_angle,R2
+ 03CE 50923100          sts _fix_angle+2+1,R5
+ 03D2 40923000          sts _fix_angle+2,R4
+ 03D6                   .dbline 202
+ 03D6           ;                  }
+ 03D6           L31:
+ 03D6                   .dbline 204
+ 03D6           ;                  
+ 03D6           ;                  rchar = WAIT;
+ 03D6 87E3              ldi R24,55
+ 03D8 80930000          sts _rchar,R24
+ 03DC                   .dbline 205
+ 03DC           ;                  loops = 0;
+ 03DC 2224              clr R2
+ 03DE 3324              clr R3
+ 03E0 30920200          sts _loops+1,R3
+ 03E4 20920100          sts _loops,R2
+ 03E8                   .dbline 206
+ 03E8           ;               }
+ 03E8           L16:
+ 03E8                   .dbline 207
+ 03E8           ;       }
+ 03E8           L6:
+ 03E8                   .dbline 76
+ 03E8 53CE              xjmp L5
+ 03EA           X11:
+ 03EA                   .dbline -2
+ 03EA           L3:
+ 03EA                   .dbline 0 ; func end
+ 03EA 2696              adiw R28,6
+ 03EC 0895              ret
+ 03EE                   .dbend
+                        .area vector(rom, abs)
+                        .org 116
+ 0074 0C94F701          jmp _timer3_interrupt
+                        .area text(rom, con, rel)
+ 03EE                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 03EE                   .dbfunc e timer3_interrupt _timer3_interrupt fV
+                        .even
+ 03EE           _timer3_interrupt::
+ 03EE 0A93              st -y,R16
+ 03F0 1A93              st -y,R17
+ 03F2 2A93              st -y,R18
+ 03F4 3A93              st -y,R19
+ 03F6 8A93              st -y,R24
+ 03F8 9A93              st -y,R25
+ 03FA 0FB7              IN R16,63
+ 03FC 0A93              st -y,R16
+ 03FE                   .dbline -1
+ 03FE                   .dbline 216
+ 03FE           ;       return 0;
+ 03FE           ; }
+ 03FE           ; 
+ 03FE           ; //------------------------------------------------
+ 03FE           ; //定时器3中断溢出,1ms中断一次
+ 03FE           ; //------------------------------------------------
+ 03FE           ; #pragma interrupt_handler timer3_interrupt: 30
+ 03FE           ; void timer3_interrupt(void) 
+ 03FE           ; {    
+ 03FE                   .dbline 217
+ 03FE           ;        TCNT3=49535;
+ 03FE 8FE7              ldi R24,49535
+ 0400 91EC              ldi R25,193
+ 0402 90938900          sts 136+1,R25
+ 0406 80938800          sts 136,R24
+ 040A                   .dbline 218
+ 040A           ;        loops++; 
+ 040A 80910100          lds R24,_loops
+ 040E 90910200          lds R25,_loops+1
+ 0412 0196              adiw R24,1
+ 0414 90930200          sts _loops+1,R25
+ 0418 80930100          sts _loops,R24
+ 041C                   .dbline 220
+ 041C           ;        
+ 041C           ;        if(!(loops % 3))     {loopsBit |= 0x01;}  
+ 041C 23E0              ldi R18,3
+ 041E 30E0              ldi R19,0
+ 0420 8C01              movw R16,R24
+ 0422 0E940000          xcall mod16u
+ 0426 0030              cpi R16,0
+ 0428 0107              cpc R16,R17
+ 042A 29F4              brne L34
+ 042C           X12:
+ 042C                   .dbline 220
+ 042C                   .dbline 220
+ 042C 80910300          lds R24,_loopsBit
+ 0430 8160              ori R24,1
+ 0432 80930300          sts _loopsBit,R24
+ 0436                   .dbline 220
+ 0436           L34:
+ 0436                   .dbline 221
+ 0436           ;        if(!(loops % 10))    {loopsBit |= 0x02;} 
+ 0436 2AE0              ldi R18,10
+ 0438 30E0              ldi R19,0
+ 043A 00910100          lds R16,_loops
+ 043E 10910200          lds R17,_loops+1
+ 0442 0E940000          xcall mod16u
+ 0446 0030              cpi R16,0
+ 0448 0107              cpc R16,R17
+ 044A 29F4              brne L36
+ 044C           X13:
+ 044C                   .dbline 221
+ 044C                   .dbline 221
+ 044C 80910300          lds R24,_loopsBit
+ 0450 8260              ori R24,2
+ 0452 80930300          sts _loopsBit,R24
+ 0456                   .dbline 221
+ 0456           L36:
+ 0456                   .dbline 222
+ 0456           ;        if(!(loops % 100))   {loopsBit |= 0x04;}   
+ 0456 24E6              ldi R18,100
+ 0458 30E0              ldi R19,0
+ 045A 00910100          lds R16,_loops
+ 045E 10910200          lds R17,_loops+1
+ 0462 0E940000          xcall mod16u
+ 0466 0030              cpi R16,0
+ 0468 0107              cpc R16,R17
+ 046A 29F4              brne L38
+ 046C           X14:
+ 046C                   .dbline 222
+ 046C                   .dbline 222
+ 046C 80910300          lds R24,_loopsBit
+ 0470 8460              ori R24,4
+ 0472 80930300          sts _loopsBit,R24
+ 0476                   .dbline 222
+ 0476           L38:
+ 0476                   .dbline 223
+ 0476           ;        if(!(loops % 1000))  {loopsBit |= 0x08;}  
+ 0476 28EE              ldi R18,1000
+ 0478 33E0              ldi R19,3
+ 047A 00910100          lds R16,_loops
+ 047E 10910200          lds R17,_loops+1
+ 0482 0E940000          xcall mod16u
+ 0486 0030              cpi R16,0
+ 0488 0107              cpc R16,R17
+ 048A 29F4              brne L40
+ 048C           X15:
+ 048C                   .dbline 223
+ 048C                   .dbline 223
+ 048C 80910300          lds R24,_loopsBit
+ 0490 8860              ori R24,8
+ 0492 80930300          sts _loopsBit,R24
+ 0496                   .dbline 223
+ 0496           L40:
+ 0496                   .dbline -2
+ 0496           L33:
+ 0496                   .dbline 0 ; func end
+ 0496 0991              ld R16,y+
+ 0498 0FBF              OUT 63,R16
+ 049A 9991              ld R25,y+
+ 049C 8991              ld R24,y+
+ 049E 3991              ld R19,y+
+ 04A0 2991              ld R18,y+
+ 04A2 1991              ld R17,y+
+ 04A4 0991              ld R16,y+
+ 04A6 1895              reti
+ 04A8                   .dbend
+                        .area vector(rom, abs)
+                        .org 72
+ 0048 0C945402          jmp _uart_receive
+                        .area text(rom, con, rel)
+ 04A8                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 04A8                   .dbfunc e uart_receive _uart_receive fV
+                        .even
+ 04A8           _uart_receive::
+ 04A8 0A92              st -y,R0
+ 04AA 1A92              st -y,R1
+ 04AC 2A92              st -y,R2
+ 04AE 3A92              st -y,R3
+ 04B0 4A92              st -y,R4
+ 04B2 5A92              st -y,R5
+ 04B4 6A92              st -y,R6
+ 04B6 7A92              st -y,R7
+ 04B8 8A92              st -y,R8
+ 04BA 9A92              st -y,R9
+ 04BC 0A93              st -y,R16
+ 04BE 1A93              st -y,R17
+ 04C0 2A93              st -y,R18
+ 04C2 3A93              st -y,R19
+ 04C4 8A93              st -y,R24
+ 04C6 9A93              st -y,R25
+ 04C8 AA93              st -y,R26
+ 04CA BA93              st -y,R27
+ 04CC EA93              st -y,R30
+ 04CE FA93              st -y,R31
+ 04D0 0FB6              IN R0,63
+ 04D2 0A92              st -y,R0
+ 04D4 AA92              st -y,R10
+ 04D6 BA92              st -y,R11
+ 04D8 2497              sbiw R28,4
+ 04DA                   .dbline -1
+ 04DA                   .dbline 231
+ 04DA           ; }
+ 04DA           ; 
+ 04DA           ; //------------------------------------------------
+ 04DA           ; //串口0接收中断
+ 04DA           ; //------------------------------------------------
+ 04DA           ; #pragma interrupt_handler uart_receive:19
+ 04DA           ; void uart_receive(void)
+ 04DA           ; {   
+ 04DA                   .dbline 232
+ 04DA           ;    rchar = UDR0;
+ 04DA 2CB0              in R2,0xc
+ 04DC 20920000          sts _rchar,R2
+ 04E0                   .dbline 234
+ 04E0           ;    
+ 04E0           ;    if(rchar == 'P')
+ 04E0 822D              mov R24,R2
+ 04E2 8035              cpi R24,80
+ 04E4 91F4              brne L43
+ 04E6           X16:
+ 04E6                   .dbline 235
+ 04E6           ;    {
+ 04E6                   .dbline 236
+ 04E6           ;         memset(&rec_buf[0],'\0',sizeof(rec_buf[0]));
+ 04E6 8AE0              ldi R24,10
+ 04E8 90E0              ldi R25,0
+ 04EA 9983              std y+1,R25
+ 04EC 8883              std y+0,R24
+ 04EE 2227              clr R18
+ 04F0 3327              clr R19
+ 04F2 00E0              ldi R16,<_rec_buf
+ 04F4 10E0              ldi R17,>_rec_buf
+ 04F6 0E940000          xcall _memset
+ 04FA                   .dbline 237
+ 04FA           ;         pid_num = 0;
+ 04FA 2224              clr R2
+ 04FC 3324              clr R3
+ 04FE 30920100          sts _pid_num+1,R3
+ 0502 20920000          sts _pid_num,R2
+ 0506                   .dbline 238
+ 0506           ;         i=0;
+ 0506 20921B00          sts _i,R2
+ 050A                   .dbline 239
+ 050A           ;    }
+ 050A           L43:
+ 050A                   .dbline 241
+ 050A           ;    
+ 050A           ;    if(rchar == 'I')
+ 050A 80910000          lds R24,_rchar
+ 050E 8934              cpi R24,73
+ 0510 99F4              brne L45
+ 0512           X17:
+ 0512                   .dbline 242
+ 0512           ;    {
+ 0512                   .dbline 243
+ 0512           ;         memset(&rec_buf[1],'\0',sizeof(rec_buf[1]));
+ 0512 8AE0              ldi R24,10
+ 0514 90E0              ldi R25,0
+ 0516 9983              std y+1,R25
+ 0518 8883              std y+0,R24
+ 051A 2227              clr R18
+ 051C 3327              clr R19
+ 051E 00E0              ldi R16,<_rec_buf+10
+ 0520 10E0              ldi R17,>_rec_buf+10
+ 0522 0E940000          xcall _memset
+ 0526                   .dbline 244
+ 0526           ;         pid_num = 1;
+ 0526 81E0              ldi R24,1
+ 0528 90E0              ldi R25,0
+ 052A 90930100          sts _pid_num+1,R25
+ 052E 80930000          sts _pid_num,R24
+ 0532                   .dbline 245
+ 0532           ;         i=0;
+ 0532 2224              clr R2
+ 0534 20921B00          sts _i,R2
+ 0538                   .dbline 246
+ 0538           ;    }
+ 0538           L45:
+ 0538                   .dbline 248
+ 0538           ;    
+ 0538           ;    if(rchar == 'D')
+ 0538 80910000          lds R24,_rchar
+ 053C 8434              cpi R24,68
+ 053E 99F4              brne L49
+ 0540           X18:
+ 0540                   .dbline 249
+ 0540           ;    {
+ 0540                   .dbline 250
+ 0540           ;         memset(&rec_buf[2],'\0',sizeof(rec_buf[2]));
+ 0540 8AE0              ldi R24,10
+ 0542 90E0              ldi R25,0
+ 0544 9983              std y+1,R25
+ 0546 8883              std y+0,R24
+ 0548 2227              clr R18
+ 054A 3327              clr R19
+ 054C 00E0              ldi R16,<_rec_buf+20
+ 054E 10E0              ldi R17,>_rec_buf+20
+ 0550 0E940000          xcall _memset
+ 0554                   .dbline 251
+ 0554           ;         pid_num = 2;
+ 0554 82E0              ldi R24,2
+ 0556 90E0              ldi R25,0
+ 0558 90930100          sts _pid_num+1,R25
+ 055C 80930000          sts _pid_num,R24
+ 0560                   .dbline 252
+ 0560           ;         i=0;
+ 0560 2224              clr R2
+ 0562 20921B00          sts _i,R2
+ 0566                   .dbline 253
+ 0566           ;    }
+ 0566           L49:
+ 0566                   .dbline 255
+ 0566           ;    
+ 0566           ;    if(isdigit(rchar))
+ 0566 00910000          lds R16,_rchar
+ 056A 1127              clr R17
+ 056C 0E940000          xcall _isdigit
+ 0570 0030              cpi R16,0
+ 0572 0107              cpc R16,R17
+ 0574 E1F0              breq L53
+ 0576           X19:
+ 0576                   .dbline 256
+ 0576           ;        rec_buf[pid_num][i++] = rchar;
+ 0576 20901B00          lds R2,_i
+ 057A 3324              clr R3
+ 057C 2101              movw R4,R2
+ 057E 822D              mov R24,R2
+ 0580 8F5F              subi R24,255    ; addi 1
+ 0582 80931B00          sts _i,R24
+ 0586 20910000          lds R18,_pid_num
+ 058A 30910100          lds R19,_pid_num+1
+ 058E 0AE0              ldi R16,10
+ 0590 10E0              ldi R17,0
+ 0592 0E940000          xcall empy16s
+ 0596 80E0              ldi R24,<_rec_buf
+ 0598 90E0              ldi R25,>_rec_buf
+ 059A 1801              movw R2,R16
+ 059C 280E              add R2,R24
+ 059E 391E              adc R3,R25
+ 05A0 E42D              mov R30,R4
+ 05A2 FF27              clr R31
+ 05A4 E20D              add R30,R2
+ 05A6 F31D              adc R31,R3
+ 05A8 20900000          lds R2,_rchar
+ 05AC 2082              std z+0,R2
+ 05AE           L53:
+ 05AE                   .dbline 258
+ 05AE           ;          
+ 05AE           ;    if(rchar == 'E')
+ 05AE 80910000          lds R24,_rchar
+ 05B2 8534              cpi R24,69
+ 05B4 09F0              breq X21
+ 05B6 59C0              xjmp L55
+ 05B8           X21:
+ 05B8           X20:
+ 05B8                   .dbline 259
+ 05B8           ;    {
+ 05B8                   .dbline 260
+ 05B8           ;          Kp_A = atoi(rec_buf[0]);
+ 05B8 00E0              ldi R16,<_rec_buf
+ 05BA 10E0              ldi R17,>_rec_buf
+ 05BC 0E940000          xcall _atoi
+ 05C0 5801              movw R10,R16
+ 05C2 B0920500          sts _Kp_A+1,R11
+ 05C6 A0920400          sts _Kp_A,R10
+ 05CA                   .dbline 261
+ 05CA           ;          Ki_A = atoi(rec_buf[1]);
+ 05CA 00E0              ldi R16,<_rec_buf+10
+ 05CC 10E0              ldi R17,>_rec_buf+10
+ 05CE 0E940000          xcall _atoi
+ 05D2 5801              movw R10,R16
+ 05D4 B0920700          sts _Ki_A+1,R11
+ 05D8 A0920600          sts _Ki_A,R10
+ 05DC                   .dbline 262
+ 05DC           ;          Kd_A = atoi(rec_buf[2]);
+ 05DC 00E0              ldi R16,<_rec_buf+20
+ 05DE 10E0              ldi R17,>_rec_buf+20
+ 05E0 0E940000          xcall _atoi
+ 05E4 5801              movw R10,R16
+ 05E6 B0920900          sts _Kd_A+1,R11
+ 05EA A0920800          sts _Kd_A,R10
+ 05EE                   .dbline 264
+ 05EE           ;          
+ 05EE           ;          PID_angle.Kp = Kp_A;
+ 05EE 00910400          lds R16,_Kp_A
+ 05F2 10910500          lds R17,_Kp_A+1
+ 05F6 0E940000          xcall uint2fp
+ 05FA 10933F00          sts _PID_angle+8+1,R17
+ 05FE 00933E00          sts _PID_angle+8,R16
+ 0602 30934100          sts _PID_angle+8+2+1,R19
+ 0606 20934000          sts _PID_angle+8+2,R18
+ 060A                   .dbline 265
+ 060A           ;          PID_angle.Ki = Ki_A;
+ 060A 00910600          lds R16,_Ki_A
+ 060E 10910700          lds R17,_Ki_A+1
+ 0612 0E940000          xcall uint2fp
+ 0616 10934300          sts _PID_angle+12+1,R17
+ 061A 00934200          sts _PID_angle+12,R16
+ 061E 30934500          sts _PID_angle+12+2+1,R19
+ 0622 20934400          sts _PID_angle+12+2,R18
+ 0626                   .dbline 266
+ 0626           ;          PID_angle.Kd = Kd_A;
+ 0626 00910800          lds R16,_Kd_A
+ 062A 10910900          lds R17,_Kd_A+1
+ 062E 0E940000          xcall uint2fp
+ 0632 10934700          sts _PID_angle+16+1,R17
+ 0636 00934600          sts _PID_angle+16,R16
+ 063A 30934900          sts _PID_angle+16+2+1,R19
+ 063E 20934800          sts _PID_angle+16+2,R18
+ 0642                   .dbline 268
+ 0642           ;          
+ 0642           ;          printf("P=%d, I=%d, D=%d\n", Kp_A,Ki_A,Kd_A);
+ 0642 20900800          lds R2,_Kd_A
+ 0646 30900900          lds R3,_Kd_A+1
+ 064A 3B82              std y+3,R3
+ 064C 2A82              std y+2,R2
+ 064E 20900600          lds R2,_Ki_A
+ 0652 30900700          lds R3,_Ki_A+1
+ 0656 3982              std y+1,R3
+ 0658 2882              std y+0,R2
+ 065A 20910400          lds R18,_Kp_A
+ 065E 30910500          lds R19,_Kp_A+1
+ 0662 00E0              ldi R16,<L62
+ 0664 10E0              ldi R17,>L62
+ 0666 0E940000          xcall _printf
+ 066A                   .dbline 269
+ 066A           ;    }
+ 066A           L55:
+ 066A                   .dbline -2
+ 066A           L42:
+ 066A                   .dbline 0 ; func end
+ 066A 2496              adiw R28,4
+ 066C B990              ld R11,y+
+ 066E A990              ld R10,y+
+ 0670 0990              ld R0,y+
+ 0672 0FBE              OUT 63,R0
+ 0674 F991              ld R31,y+
+ 0676 E991              ld R30,y+
+ 0678 B991              ld R27,y+
+ 067A A991              ld R26,y+
+ 067C 9991              ld R25,y+
+ 067E 8991              ld R24,y+
+ 0680 3991              ld R19,y+
+ 0682 2991              ld R18,y+
+ 0684 1991              ld R17,y+
+ 0686 0991              ld R16,y+
+ 0688 9990              ld R9,y+
+ 068A 8990              ld R8,y+
+ 068C 7990              ld R7,y+
+ 068E 6990              ld R6,y+
+ 0690 5990              ld R5,y+
+ 0692 4990              ld R4,y+
+ 0694 3990              ld R3,y+
+ 0696 2990              ld R2,y+
+ 0698 1990              ld R1,y+
+ 069A 0990              ld R0,y+
+ 069C 1895              reti
+ 069E                   .dbend
+                        .area bss(ram, con, rel)
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0000           _pid_num::
+ 0000                   .blkb 2
+ 0002                   .dbsym e pid_num _pid_num i
+ 0002           _rec_buf::
+ 0002                   .blkb 30
+ 0020                   .dbsym e rec_buf _rec_buf A[30:3:10]c
+ 0020           _distance::
+ 0020                   .blkb 2
+ 0022                   .dbsym e distance _distance I
+ 0022           _speed::
+ 0022                   .blkb 2
+ 0024                   .dbsym e speed _speed I
+ 0024           _PWM_Balance::
+ 0024                   .blkb 2
+ 0026                   .dbsym e PWM_Balance _PWM_Balance I
+ 0026           _angle_dot::
+ 0026                   .blkb 4
+ 002A                   .dbsym e angle_dot _angle_dot D
+ 002A           _angle::
+ 002A                   .blkb 4
+ 002E                   .dbsym e angle _angle D
+ 002E           _fix_angle::
+ 002E                   .blkb 4
+ 0032                   .dbsym e fix_angle _fix_angle D
+ 0032           _angle_Targer::
+ 0032                   .blkb 4
+ 0036                   .dbsym e angle_Targer _angle_Targer D
+ 0036           _PID_angle::
+ 0036                   .blkb 20
+ 004A                   .dbstruct 0 20 .1
+ 004A                   .dbfield 0 target D
+ 004A                   .dbfield 4 integral D
+ 004A                   .dbfield 8 Kp D
+ 004A                   .dbfield 12 Ki D
+ 004A                   .dbfield 16 Kd D
+ 004A                   .dbend
+ 004A                   .dbsym e PID_angle _PID_angle S[.1]
+                        .area data(ram, con, rel)
+ 001D                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 001D           L62:
+ 001D                   .blkb 18
+                        .area idata
+ 001D 503D25642C20493D25642C20443D2564  .byte 'P,61,37,'d,44,32,'I,61,37,'d,44,32,'D,61,37,'d
+ 002D 0A00              .byte 10,0
+                        .area data(ram, con, rel)
+ 002F                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 002F           L24:
+ 002F                   .blkb 18
+                        .area idata
+ 002F 616E676C655F546172676572A3BA2566  .byte 'a,'n,'g,'l,'e,95,'T,'a,'r,'g,'e,'r,163,186,37,'f
+ 003F 0A00              .byte 10,0
+                        .area data(ram, con, rel)
+ 0041                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0041           L21:
+ 0041                   .blkb 17
+                        .area idata
+ 0041 616E676C655F5461726765723A25660A  .byte 'a,'n,'g,'l,'e,95,'T,'a,'r,'g,'e,'r,58,37,'f,10
+ 0051 00                .byte 0
+                        .area data(ram, con, rel)
+ 0052                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+                        .area lit(rom, con, rel)
+ 0000           L20:
+ 0000 0AD7A33B          .word 0xd70a,0x3ba3
+                        .area data(ram, con, rel)
+ 0052                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0052           L4:
+ 0052                   .blkb 18
+                        .area idata
+ 0052 0975736172743020696E6974204F4B21  .byte 9,'u,'s,'a,'r,'t,48,32,'i,'n,'i,'t,32,'O,'K,33
+ 0062 0A00              .byte 10,0
+                        .area data(ram, con, rel)
+ 0064                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\main.c
+ 0064           ; }

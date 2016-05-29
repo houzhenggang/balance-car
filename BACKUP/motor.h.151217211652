@@ -1,0 +1,9 @@
+#ifndef __MOTOR_H
+#define __MOTOR_H
+
+void motor_io_init(void);
+void motor_pwm_init(void);
+void motor_init(void);
+void PWM_output(int PWM_LH,int PWM_RH);
+
+#endif

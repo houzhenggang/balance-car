@@ -1,0 +1,23 @@
+#include "iom128v.h"
+#incldeu "pid.h"
+/*
+void PID_InitStruture(PID_Struture* pid,float kp,float ki,float kd,float target)
+{
+	pid->kp = kp;
+	pid->ki = ki;
+	pid->kd = kd;
+	pid->integral = 0;
+	pid->target = target;
+}
+*/
+/*
+int pid_proc(PID_Struture* pid, float current, float differential)
+{
+	float offset;
+
+	offset = pid->target - current;
+	pid->integral += offset;
+
+	return (int)(pid->Kp*offset + pid->Ki*pid->integral + pid->Kd*differential);
+}
+*/

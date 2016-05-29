@@ -1,0 +1,20 @@
+#include "iom128v.h"
+#include "encoder.h"
+
+//编码器初始化
+void encoder_init(void)
+{
+ 	 DDRD &= ~0x03;
+	 EIMSK |= (1<<INT0) | (1<<INT1);
+	 EICRA &= 0xF0;
+	 EICRA |= (1<<ISC01) | (1<<ISC11);
+}
+
+//T3定时器初始化，用于定时
+void timer3_init(void)
+{
+ 	 TCCR3A=0X00;
+	 TCCR3B=(1<<CS31) | (1<<CS30);
+	 TCNT3=49911;
+	 ETIMSK|=(1<<TOIE3);
+}

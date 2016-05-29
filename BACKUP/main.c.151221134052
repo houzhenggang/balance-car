@@ -1,0 +1,146 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "math.h"
+#include "macros.h"
+#include "motor.h"
+#include "usart.h"
+#include "encoder.h"
+#include "mpu6050.h"
+#include "i2c.h"
+#include "pid.h"
+
+unsigned char rchar;
+
+unsigned int loops = 0;
+unsigned char loopsBit = 0;
+unsigned char i;
+float fix_angle = 0;
+
+unsigned int Kp_A=4000, Ki_A=200, Kd_A=4500;
+PID_ANGLGE PID_angle;	
+float angle_Targer;
+float angle, angle_dot;
+int PWM_L=0,PWM_R=0;
+int PWM_Balance;
+int PWM_Lturn = 0;
+int PWM_Rturn = 0;
+
+int speed, distance;
+
+int main(void)
+{
+	usart0_init(9600);
+	printf("\tusart0 init OK!\n");
+	
+	motor_init();
+	
+	encoder_init();
+	
+	MPU6050_Config();
+	for(i=0; i<10; i++)
+	{
+	    Get_Angle(&angle, &angle_dot);
+		delay_ms(10);
+		fix_angle += angle;
+	}
+			
+	angle_Targer = fix_angle/10;
+	
+	PID_angle_init(&PID_angle, Kp_A, Ki_A, Kd_A, angle_Targer);	
+	
+	timer3_init();
+	
+	while(1)
+	{
+	    if(loopsBit & 0x01)
+		{	   
+		   loopsBit &= ~(0x01);
+		  
+		   Get_Angle(&angle, &angle_dot);	 
+		   fix_angle = angle;   
+	 	   PWM_Balance = PID_Proc(&PID_angle, angle, angle_dot);
+		   
+	 	   PWM_L = PWM_Balance + PWM_Lturn; 
+	 	   PWM_R = PWM_Balance + PWM_Rturn;	
+		   
+		   PWM_Output(PWM_L, PWM_R);	
+		}
+		
+		if(loopsBit & 0x02)
+		{
+		   loopsBit &= ~(0x02); 
+		   Get_Speed(&speed);
+		   printf("speed: %d\n",speed);
+		   Clean_Speed();
+		}
+		
+		if(loopsBit & 0x04)
+		{
+		   loopsBit &= ~(0x04);
+		   
+		   if(rchar == '1')
+   		   {
+   	  	   	   angle_Targer -= 0.005;
+			   PID_angle.target = angle_Targer;
+	  		   printf("angle_Targer:%f\n", angle_Targer);
+   		   }
+   
+   		   if(rchar == '2')
+   		   {
+     	       angle_Targer += 0.005;
+			   PID_angle.target = angle_Targer;
+	           printf("angle_Targer：%f\n", angle_Targer);
+   		   }
+		   
+		   if(rchar == '3')
+   		   {
+     	       PWM_Lturn = 60;
+			   PWM_Rturn = -120;
+   		   }
+		   
+		   if(rchar == '4')
+   		   {
+     	       PWM_Lturn = -120;
+			   PWM_Rturn = 60;
+   		   }
+		   
+		   if(rchar == '5')
+   		   {
+     	       PWM_Lturn = 0;
+			   PWM_Rturn = 0;
+			   angle_Targer = fix_angle/10;
+			   PID_angle.target = angle_Targer;
+   		   }
+		   
+		   rchar = 'w';
+		}
+		
+		if(loopsBit & 0x08)
+		{
+	 	   loopsBit &= ~(0x08);
+		   loops = 0;	   	
+		}
+	}
+	
+	return 0;
+}
+
+//定时器3中断溢出,1ms中断一次
+#pragma interrupt_handler timer3_interrupt: 30
+void timer3_interrupt(void) 
+{    
+	 TCNT3=49535;
+	 loops++; 
+	 
+	 if(!(loops % 3))     {loopsBit |= 0x01;}  
+	 if(!(loops % 100))   {loopsBit |= 0x02;} 
+	 if(!(loops % 200))   {loopsBit |= 0x04;}   
+	 if(!(loops % 1000))  {loopsBit |= 0x08;}  
+}
+
+//串口0接收中断
+#pragma interrupt_handler uart_receive:19
+void uart_receive(void)
+{   
+   rchar = UDR0;
+}

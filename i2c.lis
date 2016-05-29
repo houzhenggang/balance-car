@@ -1,0 +1,1194 @@
+                        .module i2c.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile i2c.c
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\i2c.c
+ 0000                   .dbfunc e I2C_Config _I2C_Config fV
+                        .even
+ 0000           _I2C_Config::
+ 0000                   .dbline -1
+ 0000                   .dbline 15
+ 0000           ; #include "i2c.h"
+ 0000           ; 
+ 0000           ; #define SCL     0    
+ 0000           ; #define SDA     1    
+ 0000           ; 
+ 0000           ; #define  SCL_L   DDRA|=(1<<SCL)    //输出低电平
+ 0000           ; #define  SCL_H   DDRA&=~(1<<SCL)   //输入，外部电阻上拉为高电平 
+ 0000           ; #define  SDA_L   DDRA|=(1<<SDA)    //输出低电平
+ 0000           ; #define  SDA_H   DDRA&=~(1<<SDA)   //输入，外部电阻上拉为高电平
+ 0000           ; 
+ 0000           ; #define SCL_read      (PINA & 0x01)
+ 0000           ; #define SDA_read      (PINA & 0x02)
+ 0000           ; 
+ 0000           ; void I2C_Config(void)
+ 0000           ; {     
+ 0000                   .dbline 16
+ 0000           ;       PORTA&=~((1<<SCL)|(1<<SDA));
+ 0000 8BB3              in R24,0x1b
+ 0002 8C7F              andi R24,252
+ 0004 8BBB              out 0x1b,R24
+ 0006                   .dbline 17
+ 0006           ;       SCL_H;
+ 0006 D098              cbi 0x1a,0
+ 0008                   .dbline 18
+ 0008           ;       SDA_H;
+ 0008 D198              cbi 0x1a,1
+ 000A                   .dbline -2
+ 000A           L1:
+ 000A                   .dbline 0 ; func end
+ 000A 0895              ret
+ 000C                   .dbend
+ 000C                   .dbfunc s I2C_delay _I2C_delay fV
+                        .even
+ 000C           _I2C_delay:
+ 000C                   .dbline -1
+ 000C                   .dbline 22
+ 000C           ; }
+ 000C           ; 
+ 000C           ; static void I2C_delay(void)
+ 000C           ; {
+ 000C                   .dbline 23
+ 000C           ;     asm("nop");
+ 000C 0000              nop
+ 000E                   .dbline -2
+ 000E           L2:
+ 000E                   .dbline 0 ; func end
+ 000E 0895              ret
+ 0010                   .dbend
+ 0010                   .dbfunc e delay_us _delay_us fV
+ 0010           ;              b -> R20,R21
+ 0010           ;              a -> R16,R17
+                        .even
+ 0010           _delay_us::
+ 0010 4A93              st -y,R20
+ 0012 5A93              st -y,R21
+ 0014                   .dbline -1
+ 0014                   .dbline 27
+ 0014           ; }
+ 0014           ; 
+ 0014           ; void delay_us(unsigned int a)
+ 0014           ; {
+ 0014                   .dbline 29
+ 0014           ;       unsigned int b;
+ 0014           ;       for (;a>0;a--)
+ 0014 0AC0              xjmp L7
+ 0016           L4:
+ 0016                   .dbline 30
+ 0016           ;       {
+ 0016                   .dbline 31
+ 0016           ;               for (b=130;b>0;b--);
+ 0016 42E8              ldi R20,130
+ 0018 50E0              ldi R21,0
+ 001A 02C0              xjmp L11
+ 001C           L8:
+ 001C                   .dbline 31
+ 001C           L9:
+ 001C                   .dbline 31
+ 001C 4150              subi R20,1
+ 001E 5040              sbci R21,0
+ 0020           L11:
+ 0020                   .dbline 31
+ 0020 4030              cpi R20,0
+ 0022 4507              cpc R20,R21
+ 0024 D9F7              brne L8
+ 0026           X0:
+ 0026                   .dbline 32
+ 0026           ;       };
+ 0026           L5:
+ 0026                   .dbline 29
+ 0026 0150              subi R16,1
+ 0028 1040              sbci R17,0
+ 002A           L7:
+ 002A                   .dbline 29
+ 002A 0030              cpi R16,0
+ 002C 0107              cpc R16,R17
+ 002E 99F7              brne L4
+ 0030           X1:
+ 0030                   .dbline 32
+ 0030                   .dbline -2
+ 0030           L3:
+ 0030                   .dbline 0 ; func end
+ 0030 5991              ld R21,y+
+ 0032 4991              ld R20,y+
+ 0034 0895              ret
+ 0036                   .dbsym r b 20 i
+ 0036                   .dbsym r a 16 i
+ 0036                   .dbend
+ 0036                   .dbfunc e delay_ms _delay_ms fV
+ 0036           ;              b -> R20,R21
+ 0036           ;              a -> R16,R17
+                        .even
+ 0036           _delay_ms::
+ 0036 4A93              st -y,R20
+ 0038 5A93              st -y,R21
+ 003A                   .dbline -1
+ 003A                   .dbline 36
+ 003A           ; }
+ 003A           ; 
+ 003A           ; void delay_ms(unsigned int a)
+ 003A           ; {
+ 003A                   .dbline 38
+ 003A           ;       unsigned int b;
+ 003A           ;       for (;a>0;a--)
+ 003A 0AC0              xjmp L16
+ 003C           L13:
+ 003C                   .dbline 39
+ 003C           ;       {
+ 003C                   .dbline 40
+ 003C           ;               for (b=630;b>0;b--);
+ 003C 46E7              ldi R20,630
+ 003E 52E0              ldi R21,2
+ 0040 02C0              xjmp L20
+ 0042           L17:
+ 0042                   .dbline 40
+ 0042           L18:
+ 0042                   .dbline 40
+ 0042 4150              subi R20,1
+ 0044 5040              sbci R21,0
+ 0046           L20:
+ 0046                   .dbline 40
+ 0046 4030              cpi R20,0
+ 0048 4507              cpc R20,R21
+ 004A D9F7              brne L17
+ 004C           X2:
+ 004C                   .dbline 41
+ 004C           ;       }       
+ 004C           L14:
+ 004C                   .dbline 38
+ 004C 0150              subi R16,1
+ 004E 1040              sbci R17,0
+ 0050           L16:
+ 0050                   .dbline 38
+ 0050 0030              cpi R16,0
+ 0052 0107              cpc R16,R17
+ 0054 99F7              brne L13
+ 0056           X3:
+ 0056                   .dbline -2
+ 0056           L12:
+ 0056                   .dbline 0 ; func end
+ 0056 5991              ld R21,y+
+ 0058 4991              ld R20,y+
+ 005A 0895              ret
+ 005C                   .dbsym r b 20 i
+ 005C                   .dbsym r a 16 i
+ 005C                   .dbend
+ 005C                   .dbfunc s I2C_Start _I2C_Start fc
+                        .even
+ 005C           _I2C_Start:
+ 005C                   .dbline -1
+ 005C                   .dbline 45
+ 005C           ; }
+ 005C           ; 
+ 005C           ; static bool I2C_Start(void)
+ 005C           ; {
+ 005C                   .dbline 46
+ 005C           ;     SDA_H;
+ 005C D198              cbi 0x1a,1
+ 005E                   .dbline 47
+ 005E           ;     SCL_H;
+ 005E D098              cbi 0x1a,0
+ 0060                   .dbline 48
+ 0060           ;     I2C_delay();
+ 0060 D5DF              xcall _I2C_delay
+ 0062                   .dbline 49
+ 0062           ;     if (!SDA_read)
+ 0062 C999              sbic 0x19,1
+ 0064 02C0              rjmp L22
+ 0066           X4:
+ 0066                   .dbline 50
+ 0066           ;       {
+ 0066                   .dbline 51
+ 0066           ;               return false;
+ 0066 0027              clr R16
+ 0068 09C0              xjmp L21
+ 006A           L22:
+ 006A                   .dbline 53
+ 006A           ;       }
+ 006A           ;     SDA_L;
+ 006A D19A              sbi 0x1a,1
+ 006C                   .dbline 54
+ 006C           ;     I2C_delay();
+ 006C CFDF              xcall _I2C_delay
+ 006E                   .dbline 55
+ 006E           ;     if (SDA_read)
+ 006E C99B              sbis 0x19,1
+ 0070 02C0              rjmp L24
+ 0072           X5:
+ 0072                   .dbline 56
+ 0072           ;       {
+ 0072                   .dbline 57
+ 0072           ;               return false;
+ 0072 0027              clr R16
+ 0074 03C0              xjmp L21
+ 0076           L24:
+ 0076                   .dbline 59
+ 0076           ;       }
+ 0076           ;     SDA_L;
+ 0076 D19A              sbi 0x1a,1
+ 0078                   .dbline 60
+ 0078           ;     I2C_delay();
+ 0078 C9DF              xcall _I2C_delay
+ 007A                   .dbline 61
+ 007A           ;     return true;
+ 007A 01E0              ldi R16,1
+ 007C                   .dbline -2
+ 007C           L21:
+ 007C                   .dbline 0 ; func end
+ 007C 0895              ret
+ 007E                   .dbend
+ 007E                   .dbfunc s I2C_Stop _I2C_Stop fV
+                        .even
+ 007E           _I2C_Stop:
+ 007E                   .dbline -1
+ 007E                   .dbline 65
+ 007E           ; }
+ 007E           ; 
+ 007E           ; static void I2C_Stop(void)
+ 007E           ; {
+ 007E                   .dbline 66
+ 007E           ;     SCL_L;
+ 007E D09A              sbi 0x1a,0
+ 0080                   .dbline 67
+ 0080           ;     I2C_delay();
+ 0080 C5DF              xcall _I2C_delay
+ 0082                   .dbline 68
+ 0082           ;     SDA_L;
+ 0082 D19A              sbi 0x1a,1
+ 0084                   .dbline 69
+ 0084           ;     I2C_delay();
+ 0084 C3DF              xcall _I2C_delay
+ 0086                   .dbline 70
+ 0086           ;     SCL_H;
+ 0086 D098              cbi 0x1a,0
+ 0088                   .dbline 71
+ 0088           ;     I2C_delay();
+ 0088 C1DF              xcall _I2C_delay
+ 008A                   .dbline 72
+ 008A           ;     SDA_H;
+ 008A D198              cbi 0x1a,1
+ 008C                   .dbline 73
+ 008C           ;     I2C_delay();
+ 008C                   .dbline -2
+ 008C           L26:
+ 008C                   .dbline 0 ; func end
+ 008C BFCF              xjmp _I2C_delay
+ 008E                   .dbend
+ 008E                   .dbfunc s I2C_Ack _I2C_Ack fV
+                        .even
+ 008E           _I2C_Ack:
+ 008E                   .dbline -1
+ 008E                   .dbline 77
+ 008E           ; }
+ 008E           ; 
+ 008E           ; static void I2C_Ack(void)
+ 008E           ; {
+ 008E                   .dbline 78
+ 008E           ;     SCL_L;
+ 008E D09A              sbi 0x1a,0
+ 0090                   .dbline 79
+ 0090           ;     I2C_delay();
+ 0090 BDDF              xcall _I2C_delay
+ 0092                   .dbline 80
+ 0092           ;     SDA_L;
+ 0092 D19A              sbi 0x1a,1
+ 0094                   .dbline 81
+ 0094           ;     I2C_delay();
+ 0094 BBDF              xcall _I2C_delay
+ 0096                   .dbline 82
+ 0096           ;     SCL_H;
+ 0096 D098              cbi 0x1a,0
+ 0098                   .dbline 83
+ 0098           ;     I2C_delay();
+ 0098 B9DF              xcall _I2C_delay
+ 009A                   .dbline 84
+ 009A           ;     SCL_L;
+ 009A D09A              sbi 0x1a,0
+ 009C                   .dbline 85
+ 009C           ;     I2C_delay();
+ 009C                   .dbline -2
+ 009C           L27:
+ 009C                   .dbline 0 ; func end
+ 009C B7CF              xjmp _I2C_delay
+ 009E                   .dbend
+ 009E                   .dbfunc s I2C_NoAck _I2C_NoAck fV
+                        .even
+ 009E           _I2C_NoAck:
+ 009E                   .dbline -1
+ 009E                   .dbline 89
+ 009E           ; }
+ 009E           ; 
+ 009E           ; static void I2C_NoAck(void)
+ 009E           ; {
+ 009E                   .dbline 90
+ 009E           ;     SCL_L;
+ 009E D09A              sbi 0x1a,0
+ 00A0                   .dbline 91
+ 00A0           ;     I2C_delay();
+ 00A0 B5DF              xcall _I2C_delay
+ 00A2                   .dbline 92
+ 00A2           ;     SDA_H;
+ 00A2 D198              cbi 0x1a,1
+ 00A4                   .dbline 93
+ 00A4           ;     I2C_delay();
+ 00A4 B3DF              xcall _I2C_delay
+ 00A6                   .dbline 94
+ 00A6           ;     SCL_H;
+ 00A6 D098              cbi 0x1a,0
+ 00A8                   .dbline 95
+ 00A8           ;     I2C_delay();
+ 00A8 B1DF              xcall _I2C_delay
+ 00AA                   .dbline 96
+ 00AA           ;     SCL_L;
+ 00AA D09A              sbi 0x1a,0
+ 00AC                   .dbline 97
+ 00AC           ;     I2C_delay();
+ 00AC                   .dbline -2
+ 00AC           L28:
+ 00AC                   .dbline 0 ; func end
+ 00AC AFCF              xjmp _I2C_delay
+ 00AE                   .dbend
+ 00AE                   .dbfunc s I2C_WaitAck _I2C_WaitAck fc
+                        .even
+ 00AE           _I2C_WaitAck:
+ 00AE                   .dbline -1
+ 00AE                   .dbline 101
+ 00AE           ; }
+ 00AE           ; 
+ 00AE           ; static bool I2C_WaitAck(void)
+ 00AE           ; {
+ 00AE                   .dbline 102
+ 00AE           ;     SCL_L;
+ 00AE D09A              sbi 0x1a,0
+ 00B0                   .dbline 103
+ 00B0           ;     I2C_delay();
+ 00B0 ADDF              xcall _I2C_delay
+ 00B2                   .dbline 104
+ 00B2           ;     SDA_H;
+ 00B2 D198              cbi 0x1a,1
+ 00B4                   .dbline 105
+ 00B4           ;     I2C_delay();
+ 00B4 ABDF              xcall _I2C_delay
+ 00B6                   .dbline 106
+ 00B6           ;     SCL_H;
+ 00B6 D098              cbi 0x1a,0
+ 00B8                   .dbline 107
+ 00B8           ;     I2C_delay();
+ 00B8 A9DF              xcall _I2C_delay
+ 00BA                   .dbline 108
+ 00BA           ;     if (SDA_read) 
+ 00BA C99B              sbis 0x19,1
+ 00BC 03C0              rjmp L30
+ 00BE           X6:
+ 00BE                   .dbline 109
+ 00BE           ;       {
+ 00BE                   .dbline 110
+ 00BE           ;               SCL_L;
+ 00BE D09A              sbi 0x1a,0
+ 00C0                   .dbline 111
+ 00C0           ;         return false;
+ 00C0 0027              clr R16
+ 00C2 02C0              xjmp L29
+ 00C4           L30:
+ 00C4                   .dbline 113
+ 00C4           ;     }
+ 00C4           ;     SCL_L;
+ 00C4 D09A              sbi 0x1a,0
+ 00C6                   .dbline 114
+ 00C6           ;     return true;
+ 00C6 01E0              ldi R16,1
+ 00C8                   .dbline -2
+ 00C8           L29:
+ 00C8                   .dbline 0 ; func end
+ 00C8 0895              ret
+ 00CA                   .dbend
+ 00CA                   .dbfunc s I2C_SendByte _I2C_SendByte fV
+ 00CA           ;              i -> R20
+ 00CA           ;           byte -> R10
+                        .even
+ 00CA           _I2C_SendByte:
+ 00CA AA92              st -y,R10
+ 00CC 4A93              st -y,R20
+ 00CE A02E              mov R10,R16
+ 00D0                   .dbline -1
+ 00D0                   .dbline 118
+ 00D0           ; }
+ 00D0           ; 
+ 00D0           ; static void I2C_SendByte(uint8_t byte)
+ 00D0           ; {
+ 00D0                   .dbline 119
+ 00D0           ;     uint8_t i = 8;
+ 00D0 48E0              ldi R20,8
+ 00D2 0BC0              xjmp L34
+ 00D4           L33:
+ 00D4                   .dbline 120
+ 00D4           ;     while (i--) {
+ 00D4                   .dbline 121
+ 00D4           ;         SCL_L;
+ 00D4 D09A              sbi 0x1a,0
+ 00D6                   .dbline 122
+ 00D6           ;         I2C_delay();
+ 00D6 9ADF              xcall _I2C_delay
+ 00D8                   .dbline 123
+ 00D8           ;         if (byte & 0x80)
+ 00D8 A7FE              sbrs R10,7
+ 00DA 02C0              rjmp L36
+ 00DC           X7:
+ 00DC                   .dbline 124
+ 00DC           ;             SDA_H;
+ 00DC D198              cbi 0x1a,1
+ 00DE 01C0              xjmp L37
+ 00E0           L36:
+ 00E0                   .dbline 126
+ 00E0           ;         else
+ 00E0           ;             SDA_L;
+ 00E0 D19A              sbi 0x1a,1
+ 00E2           L37:
+ 00E2                   .dbline 127
+ 00E2           ;         byte <<= 1;
+ 00E2 AA0C              lsl R10
+ 00E4                   .dbline 128
+ 00E4           ;         I2C_delay();
+ 00E4 93DF              xcall _I2C_delay
+ 00E6                   .dbline 129
+ 00E6           ;         SCL_H;
+ 00E6 D098              cbi 0x1a,0
+ 00E8                   .dbline 130
+ 00E8           ;         I2C_delay();
+ 00E8 91DF              xcall _I2C_delay
+ 00EA                   .dbline 131
+ 00EA           ;     }
+ 00EA           L34:
+ 00EA                   .dbline 120
+ 00EA 242E              mov R2,R20
+ 00EC 3324              clr R3
+ 00EE 4150              subi R20,1
+ 00F0 2220              tst R2
+ 00F2 81F7              brne L33
+ 00F4           X8:
+ 00F4                   .dbline 132
+ 00F4           ;     SCL_L;
+ 00F4 D09A              sbi 0x1a,0
+ 00F6                   .dbline -2
+ 00F6           L32:
+ 00F6                   .dbline 0 ; func end
+ 00F6 4991              ld R20,y+
+ 00F8 A990              ld R10,y+
+ 00FA 0895              ret
+ 00FC                   .dbsym r i 20 c
+ 00FC                   .dbsym r byte 10 c
+ 00FC                   .dbend
+ 00FC                   .dbfunc s I2C_ReceiveByte _I2C_ReceiveByte fc
+ 00FC           ;              i -> R22
+ 00FC           ;           byte -> R20
+                        .even
+ 00FC           _I2C_ReceiveByte:
+ 00FC 4A93              st -y,R20
+ 00FE 6A93              st -y,R22
+ 0100                   .dbline -1
+ 0100                   .dbline 136
+ 0100           ; }
+ 0100           ; 
+ 0100           ; static uint8_t I2C_ReceiveByte(void)
+ 0100           ; {
+ 0100                   .dbline 137
+ 0100           ;     uint8_t i = 8;
+ 0100 68E0              ldi R22,8
+ 0102                   .dbline 138
+ 0102           ;     uint8_t byte = 0;
+ 0102 4427              clr R20
+ 0104                   .dbline 140
+ 0104           ; 
+ 0104           ;     SDA_H;
+ 0104 D198              cbi 0x1a,1
+ 0106 08C0              xjmp L40
+ 0108           L39:
+ 0108                   .dbline 141
+ 0108           ;     while (i--) {
+ 0108                   .dbline 142
+ 0108           ;         byte <<= 1;
+ 0108 440F              lsl R20
+ 010A                   .dbline 143
+ 010A           ;         SCL_L;
+ 010A D09A              sbi 0x1a,0
+ 010C                   .dbline 144
+ 010C           ;         I2C_delay();
+ 010C 7FDF              xcall _I2C_delay
+ 010E                   .dbline 145
+ 010E           ;         SCL_H;
+ 010E D098              cbi 0x1a,0
+ 0110                   .dbline 146
+ 0110           ;         I2C_delay();
+ 0110 7DDF              xcall _I2C_delay
+ 0112                   .dbline 147
+ 0112           ;         if (SDA_read) {
+ 0112 C99B              sbis 0x19,1
+ 0114 01C0              rjmp L42
+ 0116           X9:
+ 0116                   .dbline 147
+ 0116                   .dbline 148
+ 0116           ;             byte |= 0x01;
+ 0116 4160              ori R20,1
+ 0118                   .dbline 149
+ 0118           ;         }
+ 0118           L42:
+ 0118                   .dbline 150
+ 0118           ;     }
+ 0118           L40:
+ 0118                   .dbline 141
+ 0118 262E              mov R2,R22
+ 011A 3324              clr R3
+ 011C 6150              subi R22,1
+ 011E 2220              tst R2
+ 0120 99F7              brne L39
+ 0122           X10:
+ 0122                   .dbline 151
+ 0122           ;     SCL_L;
+ 0122 D09A              sbi 0x1a,0
+ 0124                   .dbline 152
+ 0124           ;     return byte;
+ 0124 042F              mov R16,R20
+ 0126                   .dbline -2
+ 0126           L38:
+ 0126                   .dbline 0 ; func end
+ 0126 6991              ld R22,y+
+ 0128 4991              ld R20,y+
+ 012A 0895              ret
+ 012C                   .dbsym r i 22 c
+ 012C                   .dbsym r byte 20 c
+ 012C                   .dbend
+ 012C                   .dbfunc e i2cWriteBuffer _i2cWriteBuffer fc
+ 012C           ;              i -> R20,R21
+ 012C           ;           data -> R10,R11
+ 012C           ;            len -> R12
+ 012C           ;            reg -> R14
+ 012C           ;           addr -> R20
+                        .even
+ 012C           _i2cWriteBuffer::
+ 012C 0E940000          xcall push_xgset30FC
+ 0130 E22E              mov R14,R18
+ 0132 402F              mov R20,R16
+ 0134 C884              ldd R12,y+8
+ 0136 AA84              ldd R10,y+10
+ 0138 BB84              ldd R11,y+11
+ 013A                   .dbline -1
+ 013A                   .dbline 156
+ 013A           ; }
+ 013A           ; 
+ 013A           ; bool i2cWriteBuffer(uint8_t addr, uint8_t reg, uint8_t len, uint8_t * data)
+ 013A           ; {
+ 013A                   .dbline 158
+ 013A           ;     int i;
+ 013A           ;     if (!I2C_Start())
+ 013A 90DF              xcall _I2C_Start
+ 013C 0023              tst R16
+ 013E 11F4              brne L45
+ 0140           X11:
+ 0140                   .dbline 159
+ 0140           ;       {
+ 0140                   .dbline 160
+ 0140           ;               return false;
+ 0140 0027              clr R16
+ 0142 24C0              xjmp L44
+ 0144           L45:
+ 0144                   .dbline 163
+ 0144           ;       }
+ 0144           ;       
+ 0144           ;     I2C_SendByte(addr << 1 | I2C_DirectionTransmitter);
+ 0144 042F              mov R16,R20
+ 0146 000F              lsl R16
+ 0148 C0DF              xcall _I2C_SendByte
+ 014A                   .dbline 165
+ 014A           ;       
+ 014A           ;     if (!I2C_WaitAck()) 
+ 014A B1DF              xcall _I2C_WaitAck
+ 014C 0023              tst R16
+ 014E 19F4              brne L47
+ 0150           X12:
+ 0150                   .dbline 166
+ 0150           ;       {
+ 0150                   .dbline 167
+ 0150           ;               I2C_Stop();
+ 0150 96DF              xcall _I2C_Stop
+ 0152                   .dbline 168
+ 0152           ;         return false;
+ 0152 0027              clr R16
+ 0154 1BC0              xjmp L44
+ 0156           L47:
+ 0156                   .dbline 170
+ 0156           ;     }
+ 0156           ;     I2C_SendByte(reg);
+ 0156 0E2D              mov R16,R14
+ 0158 B8DF              xcall _I2C_SendByte
+ 015A                   .dbline 171
+ 015A           ;     I2C_WaitAck();
+ 015A A9DF              xcall _I2C_WaitAck
+ 015C                   .dbline 172
+ 015C           ;     for (i = 0; i < len; i++)
+ 015C 4427              clr R20
+ 015E 5527              clr R21
+ 0160 0EC0              xjmp L52
+ 0162           L49:
+ 0162                   .dbline 173
+ 0162           ;       {
+ 0162                   .dbline 174
+ 0162           ;         I2C_SendByte(data[i]);
+ 0162 FA01              movw R30,R20
+ 0164 EA0D              add R30,R10
+ 0166 FB1D              adc R31,R11
+ 0168 0081              ldd R16,z+0
+ 016A AFDF              xcall _I2C_SendByte
+ 016C                   .dbline 175
+ 016C           ;         if (!I2C_WaitAck()) 
+ 016C A0DF              xcall _I2C_WaitAck
+ 016E E02E              mov R14,R16
+ 0170 0023              tst R16
+ 0172 19F4              brne L53
+ 0174           X13:
+ 0174                   .dbline 176
+ 0174           ;               {
+ 0174                   .dbline 177
+ 0174           ;                       I2C_Stop();
+ 0174 84DF              xcall _I2C_Stop
+ 0176                   .dbline 178
+ 0176           ;             return false;
+ 0176 0027              clr R16
+ 0178 09C0              xjmp L44
+ 017A           L53:
+ 017A                   .dbline 180
+ 017A           ;         }
+ 017A           ;     }
+ 017A           L50:
+ 017A                   .dbline 172
+ 017A 4F5F              subi R20,255  ; offset = 1
+ 017C 5F4F              sbci R21,255
+ 017E           L52:
+ 017E                   .dbline 172
+ 017E 2C2C              mov R2,R12
+ 0180 3324              clr R3
+ 0182 4215              cp R20,R2
+ 0184 5305              cpc R21,R3
+ 0186 6CF3              brlt L49
+ 0188           X14:
+ 0188                   .dbline 181
+ 0188           ;     I2C_Stop();
+ 0188 7ADF              xcall _I2C_Stop
+ 018A                   .dbline 182
+ 018A           ;     return true;
+ 018A 01E0              ldi R16,1
+ 018C                   .dbline -2
+ 018C           L44:
+ 018C                   .dbline 0 ; func end
+ 018C 0C940000          xjmp pop_xgset30FC
+ 0190                   .dbsym r i 20 I
+ 0190                   .dbsym r data 10 pc
+ 0190                   .dbsym r len 12 c
+ 0190                   .dbsym r reg 14 c
+ 0190                   .dbsym r addr 20 c
+ 0190                   .dbend
+ 0190                   .dbfunc e i2cwrite _i2cwrite fc
+ 0190           ;           data -> R20,R21
+ 0190           ;            len -> R14
+ 0190           ;            reg -> R12
+ 0190           ;           addr -> R10
+                        .even
+ 0190           _i2cwrite::
+ 0190 0E940000          xcall push_xgset30FC
+ 0194 C22E              mov R12,R18
+ 0196 A02E              mov R10,R16
+ 0198 2497              sbiw R28,4
+ 019A EC84              ldd R14,y+12
+ 019C 4E85              ldd R20,y+14
+ 019E 5F85              ldd R21,y+15
+ 01A0                   .dbline -1
+ 01A0                   .dbline 186
+ 01A0           ; }
+ 01A0           ; 
+ 01A0           ; int8_t i2cwrite(uint8_t addr, uint8_t reg, uint8_t len, uint8_t * data)
+ 01A0           ; {
+ 01A0                   .dbline 187
+ 01A0           ;       if(i2cWriteBuffer(addr,reg,len,data))
+ 01A0 5B83              std y+3,R21
+ 01A2 4A83              std y+2,R20
+ 01A4 E882              std y+0,R14
+ 01A6 2C2D              mov R18,R12
+ 01A8 0A2D              mov R16,R10
+ 01AA C0DF              xcall _i2cWriteBuffer
+ 01AC 0023              tst R16
+ 01AE 11F0              breq L56
+ 01B0           X15:
+ 01B0                   .dbline 188
+ 01B0           ;       {
+ 01B0                   .dbline 189
+ 01B0           ;               return TRUE;
+ 01B0 0027              clr R16
+ 01B2 01C0              xjmp L55
+ 01B4           L56:
+ 01B4                   .dbline 192
+ 01B4           ;       }
+ 01B4           ;       else
+ 01B4           ;       {
+ 01B4                   .dbline 193
+ 01B4           ;               return FALSE;
+ 01B4 0FEF              ldi R16,255
+ 01B6                   .dbline -2
+ 01B6           L55:
+ 01B6                   .dbline 0 ; func end
+ 01B6 2496              adiw R28,4
+ 01B8 0C940000          xjmp pop_xgset30FC
+ 01BC                   .dbsym r data 20 pc
+ 01BC                   .dbsym r len 14 c
+ 01BC                   .dbsym r reg 12 c
+ 01BC                   .dbsym r addr 10 c
+ 01BC                   .dbend
+ 01BC                   .dbfunc e i2cread _i2cread fc
+ 01BC           ;            buf -> R20,R21
+ 01BC           ;            len -> R14
+ 01BC           ;            reg -> R12
+ 01BC           ;           addr -> R10
+                        .even
+ 01BC           _i2cread::
+ 01BC 0E940000          xcall push_xgset30FC
+ 01C0 C22E              mov R12,R18
+ 01C2 A02E              mov R10,R16
+ 01C4 2497              sbiw R28,4
+ 01C6 EC84              ldd R14,y+12
+ 01C8 4E85              ldd R20,y+14
+ 01CA 5F85              ldd R21,y+15
+ 01CC                   .dbline -1
+ 01CC                   .dbline 197
+ 01CC           ;       }
+ 01CC           ; }
+ 01CC           ; int8_t i2cread(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
+ 01CC           ; {
+ 01CC                   .dbline 198
+ 01CC           ;       if(i2cRead(addr,reg,len,buf))
+ 01CC 5B83              std y+3,R21
+ 01CE 4A83              std y+2,R20
+ 01D0 E882              std y+0,R14
+ 01D2 2C2D              mov R18,R12
+ 01D4 0A2D              mov R16,R10
+ 01D6 25D0              xcall _i2cRead
+ 01D8 0023              tst R16
+ 01DA 11F0              breq L59
+ 01DC           X16:
+ 01DC                   .dbline 199
+ 01DC           ;       {
+ 01DC                   .dbline 200
+ 01DC           ;               return TRUE;
+ 01DC 0027              clr R16
+ 01DE 01C0              xjmp L58
+ 01E0           L59:
+ 01E0                   .dbline 203
+ 01E0           ;       }
+ 01E0           ;       else
+ 01E0           ;       {
+ 01E0                   .dbline 204
+ 01E0           ;               return FALSE;
+ 01E0 0FEF              ldi R16,255
+ 01E2                   .dbline -2
+ 01E2           L58:
+ 01E2                   .dbline 0 ; func end
+ 01E2 2496              adiw R28,4
+ 01E4 0C940000          xjmp pop_xgset30FC
+ 01E8                   .dbsym r buf 20 pc
+ 01E8                   .dbsym r len 14 c
+ 01E8                   .dbsym r reg 12 c
+ 01E8                   .dbsym r addr 10 c
+ 01E8                   .dbend
+ 01E8                   .dbfunc e i2cWrite _i2cWrite fc
+ 01E8           ;           data -> R10
+ 01E8           ;            reg -> R12
+ 01E8           ;           addr -> R14
+                        .even
+ 01E8           _i2cWrite::
+ 01E8 0E940000          xcall push_xgset00FC
+ 01EC C22E              mov R12,R18
+ 01EE E02E              mov R14,R16
+ 01F0 AE80              ldd R10,y+6
+ 01F2                   .dbline -1
+ 01F2                   .dbline 209
+ 01F2           ;       }
+ 01F2           ; }
+ 01F2           ; 
+ 01F2           ; bool i2cWrite(uint8_t addr, uint8_t reg, uint8_t data)
+ 01F2           ; {
+ 01F2                   .dbline 210
+ 01F2           ;     if (!I2C_Start())
+ 01F2 34DF              xcall _I2C_Start
+ 01F4 0023              tst R16
+ 01F6 11F4              brne L62
+ 01F8           X17:
+ 01F8                   .dbline 211
+ 01F8           ;         return false;
+ 01F8 0027              clr R16
+ 01FA 11C0              xjmp L61
+ 01FC           L62:
+ 01FC                   .dbline 212
+ 01FC           ;     I2C_SendByte(addr << 1 | I2C_DirectionTransmitter);
+ 01FC 0E2D              mov R16,R14
+ 01FE 000F              lsl R16
+ 0200 64DF              xcall _I2C_SendByte
+ 0202                   .dbline 213
+ 0202           ;     if (!I2C_WaitAck()) {
+ 0202 55DF              xcall _I2C_WaitAck
+ 0204 0023              tst R16
+ 0206 19F4              brne L64
+ 0208           X18:
+ 0208                   .dbline 213
+ 0208                   .dbline 214
+ 0208           ;         I2C_Stop();
+ 0208 3ADF              xcall _I2C_Stop
+ 020A                   .dbline 215
+ 020A           ;         return false;
+ 020A 0027              clr R16
+ 020C 08C0              xjmp L61
+ 020E           L64:
+ 020E                   .dbline 217
+ 020E           ;     }
+ 020E           ;     I2C_SendByte(reg);
+ 020E 0C2D              mov R16,R12
+ 0210 5CDF              xcall _I2C_SendByte
+ 0212                   .dbline 218
+ 0212           ;     I2C_WaitAck();
+ 0212 4DDF              xcall _I2C_WaitAck
+ 0214                   .dbline 219
+ 0214           ;     I2C_SendByte(data);
+ 0214 0A2D              mov R16,R10
+ 0216 59DF              xcall _I2C_SendByte
+ 0218                   .dbline 220
+ 0218           ;     I2C_WaitAck();
+ 0218 4ADF              xcall _I2C_WaitAck
+ 021A                   .dbline 221
+ 021A           ;     I2C_Stop();
+ 021A 31DF              xcall _I2C_Stop
+ 021C                   .dbline 222
+ 021C           ;     return true;
+ 021C 01E0              ldi R16,1
+ 021E                   .dbline -2
+ 021E           L61:
+ 021E                   .dbline 0 ; func end
+ 021E 0C940000          xjmp pop_xgset00FC
+ 0222                   .dbsym r data 10 c
+ 0222                   .dbsym r reg 12 c
+ 0222                   .dbsym r addr 14 c
+ 0222                   .dbend
+ 0222                   .dbfunc e i2cRead _i2cRead fc
+ 0222           ;            buf -> R20,R21
+ 0222           ;            len -> R22
+ 0222           ;            reg -> R12
+ 0222           ;           addr -> R10
+                        .even
+ 0222           _i2cRead::
+ 0222 0E940000          xcall push_xgsetF03C
+ 0226 C22E              mov R12,R18
+ 0228 A02E              mov R10,R16
+ 022A 6885              ldd R22,y+8
+ 022C 4A85              ldd R20,y+10
+ 022E 5B85              ldd R21,y+11
+ 0230                   .dbline -1
+ 0230                   .dbline 226
+ 0230           ; }
+ 0230           ; 
+ 0230           ; bool i2cRead(uint8_t addr, uint8_t reg, uint8_t len, uint8_t *buf)
+ 0230           ; {
+ 0230                   .dbline 227
+ 0230           ;     if (!I2C_Start())
+ 0230 15DF              xcall _I2C_Start
+ 0232 0023              tst R16
+ 0234 11F4              brne L67
+ 0236           X19:
+ 0236                   .dbline 228
+ 0236           ;         return false;
+ 0236 0027              clr R16
+ 0238 23C0              xjmp L66
+ 023A           L67:
+ 023A                   .dbline 229
+ 023A           ;     I2C_SendByte(addr << 1 | I2C_DirectionTransmitter);
+ 023A 0A2D              mov R16,R10
+ 023C 000F              lsl R16
+ 023E 45DF              xcall _I2C_SendByte
+ 0240                   .dbline 230
+ 0240           ;     if (!I2C_WaitAck()) {
+ 0240 36DF              xcall _I2C_WaitAck
+ 0242 0023              tst R16
+ 0244 19F4              brne L69
+ 0246           X20:
+ 0246                   .dbline 230
+ 0246                   .dbline 231
+ 0246           ;         I2C_Stop();
+ 0246 1BDF              xcall _I2C_Stop
+ 0248                   .dbline 232
+ 0248           ;         return false;
+ 0248 0027              clr R16
+ 024A 1AC0              xjmp L66
+ 024C           L69:
+ 024C                   .dbline 234
+ 024C           ;     }
+ 024C           ;     I2C_SendByte(reg);
+ 024C 0C2D              mov R16,R12
+ 024E 3DDF              xcall _I2C_SendByte
+ 0250                   .dbline 235
+ 0250           ;     I2C_WaitAck();
+ 0250 2EDF              xcall _I2C_WaitAck
+ 0252                   .dbline 236
+ 0252           ;     I2C_Start();
+ 0252 04DF              xcall _I2C_Start
+ 0254                   .dbline 237
+ 0254           ;     I2C_SendByte(addr << 1 | I2C_DirectionReceiver);
+ 0254 0A2D              mov R16,R10
+ 0256 000F              lsl R16
+ 0258 0160              ori R16,1
+ 025A 37DF              xcall _I2C_SendByte
+ 025C                   .dbline 238
+ 025C           ;     I2C_WaitAck();
+ 025C 28DF              xcall _I2C_WaitAck
+ 025E 0CC0              xjmp L72
+ 0260           L71:
+ 0260                   .dbline 239
+ 0260           ;     while (len) {
+ 0260                   .dbline 240
+ 0260           ;         *buf = I2C_ReceiveByte();
+ 0260 4DDF              xcall _I2C_ReceiveByte
+ 0262 A02E              mov R10,R16
+ 0264 FA01              movw R30,R20
+ 0266 A082              std z+0,R10
+ 0268                   .dbline 241
+ 0268           ;         if (len == 1)
+ 0268 6130              cpi R22,1
+ 026A 11F4              brne L74
+ 026C           X21:
+ 026C                   .dbline 242
+ 026C           ;             I2C_NoAck();
+ 026C 18DF              xcall _I2C_NoAck
+ 026E 01C0              xjmp L75
+ 0270           L74:
+ 0270                   .dbline 244
+ 0270           ;         else
+ 0270           ;             I2C_Ack();
+ 0270 0EDF              xcall _I2C_Ack
+ 0272           L75:
+ 0272                   .dbline 245
+ 0272           ;         buf++;
+ 0272 4F5F              subi R20,255  ; offset = 1
+ 0274 5F4F              sbci R21,255
+ 0276                   .dbline 246
+ 0276           ;         len--;
+ 0276 6A95              dec R22
+ 0278                   .dbline 247
+ 0278           ;     }
+ 0278           L72:
+ 0278                   .dbline 239
+ 0278 6623              tst R22
+ 027A 91F7              brne L71
+ 027C           X22:
+ 027C                   .dbline 248
+ 027C           ;     I2C_Stop();
+ 027C 00DF              xcall _I2C_Stop
+ 027E                   .dbline 249
+ 027E           ;     return true;
+ 027E 01E0              ldi R16,1
+ 0280                   .dbline -2
+ 0280           L66:
+ 0280                   .dbline 0 ; func end
+ 0280 0C940000          xjmp pop_xgsetF03C
+ 0284                   .dbsym r buf 20 pc
+ 0284                   .dbsym r len 22 c
+ 0284                   .dbsym r reg 12 c
+ 0284                   .dbsym r addr 10 c
+ 0284                   .dbend
+ 0284                   .dbfunc e i2cGetErrorCounter _i2cGetErrorCounter fs
+                        .even
+ 0284           _i2cGetErrorCounter::
+ 0284                   .dbline -1
+ 0284                   .dbline 253
+ 0284           ; }
+ 0284           ; 
+ 0284           ; uint16_t i2cGetErrorCounter(void)
+ 0284           ; {
+ 0284                   .dbline 254
+ 0284           ;     return 0;
+ 0284 0027              clr R16
+ 0286 1127              clr R17
+ 0288                   .dbline -2
+ 0288           L76:
+ 0288                   .dbline 0 ; func end
+ 0288 0895              ret
+ 028A                   .dbend
+ 028A                   .dbfunc e MPU6050_ReadI2C _MPU6050_ReadI2C fc
+ 028A           ;       REG_data -> R10
+ 028A           ;    REG_Address -> R12
+ 028A           ;   SlaveAddress -> R20
+                        .even
+ 028A           _MPU6050_ReadI2C::
+ 028A 0E940000          xcall push_xgset303C
+ 028E C22E              mov R12,R18
+ 0290 402F              mov R20,R16
+ 0292                   .dbline -1
+ 0292                   .dbline 264
+ 0292           ; }
+ 0292           ; 
+ 0292           ; /************************************************
+ 0292           ;  函数名:     MPU6050_ReadI2C
+ 0292           ;  函数功能:      从I2C设备读取一个字节数据
+ 0292           ;  形参:                  读取设备地址
+ 0292           ;  返回参数:      读取字节数据
+ 0292           ; ************************************************/
+ 0292           ; uint8_t MPU6050_ReadI2C(uint8_t SlaveAddress,uint8_t REG_Address)
+ 0292           ; {
+ 0292                   .dbline 266
+ 0292           ;       uint8_t REG_data;
+ 0292           ;       I2C_Start();                  //起始信号
+ 0292 E4DE              xcall _I2C_Start
+ 0294                   .dbline 267
+ 0294           ;       I2C_SendByte(SlaveAddress);  //发送设备地址+写信号
+ 0294 042F              mov R16,R20
+ 0296 19DF              xcall _I2C_SendByte
+ 0298                   .dbline 268
+ 0298           ;       REG_data=I2C_WaitAck();    
+ 0298 0ADF              xcall _I2C_WaitAck
+ 029A                   .dbline 269
+ 029A           ;       I2C_SendByte(REG_Address);   //发送存储单元地址，从0开始
+ 029A 0C2D              mov R16,R12
+ 029C 16DF              xcall _I2C_SendByte
+ 029E                   .dbline 270
+ 029E           ;       REG_data=I2C_WaitAck();    
+ 029E 07DF              xcall _I2C_WaitAck
+ 02A0                   .dbline 271
+ 02A0           ;       I2C_Start();                  //起始信号
+ 02A0 DDDE              xcall _I2C_Start
+ 02A2                   .dbline 272
+ 02A2           ;       I2C_SendByte(SlaveAddress+1);//发送设备地址+读信号
+ 02A2 042F              mov R16,R20
+ 02A4 0F5F              subi R16,255    ; addi 1
+ 02A6 11DF              xcall _I2C_SendByte
+ 02A8                   .dbline 273
+ 02A8           ;       REG_data=I2C_WaitAck();    
+ 02A8 02DF              xcall _I2C_WaitAck
+ 02AA                   .dbline 274
+ 02AA           ;       REG_data=I2C_ReceiveByte();             //读取一个字节,不继续再读,发送NAK,读出寄存器数据
+ 02AA 28DF              xcall _I2C_ReceiveByte
+ 02AC C02E              mov R12,R16
+ 02AE AC2C              mov R10,R12
+ 02B0                   .dbline 275
+ 02B0           ;       I2C_Stop();                       //停止信号
+ 02B0 E6DE              xcall _I2C_Stop
+ 02B2                   .dbline 276
+ 02B2           ;       return REG_data;
+ 02B2 0A2D              mov R16,R10
+ 02B4                   .dbline -2
+ 02B4           L77:
+ 02B4                   .dbline 0 ; func end
+ 02B4 0C940000          xjmp pop_xgset303C
+ 02B8                   .dbsym r REG_data 10 c
+ 02B8                   .dbsym r REG_Address 12 c
+ 02B8                   .dbsym r SlaveAddress 20 c
+ 02B8                   .dbend
+ 02B8                   .dbfunc e MPU6050_WriteI2C _MPU6050_WriteI2C fV
+ 02B8           ;       REG_data -> R10
+ 02B8           ;    REG_Address -> R12
+ 02B8           ;   SlaveAddress -> R14
+                        .even
+ 02B8           _MPU6050_WriteI2C::
+ 02B8 0E940000          xcall push_xgset00FC
+ 02BC C22E              mov R12,R18
+ 02BE E02E              mov R14,R16
+ 02C0 AE80              ldd R10,y+6
+ 02C2                   .dbline -1
+ 02C2                   .dbline 286
+ 02C2           ; }
+ 02C2           ; 
+ 02C2           ; /************************************************
+ 02C2           ;  函数名:     MPU6050_WriteI2C
+ 02C2           ;  函数功能:      向I2C设备写入一个字节数据
+ 02C2           ;  形参:                  写入设备地址，写入字节数据
+ 02C2           ;  返回参数:      无
+ 02C2           ; ************************************************/
+ 02C2           ; void MPU6050_WriteI2C(uint8_t SlaveAddress,uint8_t REG_Address,uint8_t REG_data)
+ 02C2           ; {
+ 02C2                   .dbline 287
+ 02C2           ;     I2C_Start();                   //起始信号
+ 02C2 CCDE              xcall _I2C_Start
+ 02C4                   .dbline 288
+ 02C4           ;     I2C_SendByte(SlaveAddress);   //发送设备地址+写信号
+ 02C4 0E2D              mov R16,R14
+ 02C6 01DF              xcall _I2C_SendByte
+ 02C8                   .dbline 289
+ 02C8           ;       I2C_WaitAck();     
+ 02C8 F2DE              xcall _I2C_WaitAck
+ 02CA                   .dbline 290
+ 02CA           ;     I2C_SendByte(REG_Address);    //内部寄存器地址
+ 02CA 0C2D              mov R16,R12
+ 02CC FEDE              xcall _I2C_SendByte
+ 02CE                   .dbline 291
+ 02CE           ;       I2C_WaitAck();                                                                                                     
+ 02CE EFDE              xcall _I2C_WaitAck
+ 02D0                   .dbline 292
+ 02D0           ;     I2C_SendByte(REG_data);       //内部寄存器数据
+ 02D0 0A2D              mov R16,R10
+ 02D2 FBDE              xcall _I2C_SendByte
+ 02D4                   .dbline 293
+ 02D4           ;       I2C_WaitAck();                                                                                                     
+ 02D4 ECDE              xcall _I2C_WaitAck
+ 02D6                   .dbline 294
+ 02D6           ;     I2C_Stop();                    //发送停止信号
+ 02D6 D3DE              xcall _I2C_Stop
+ 02D8                   .dbline -2
+ 02D8           L78:
+ 02D8                   .dbline 0 ; func end
+ 02D8 0C940000          xjmp pop_xgset00FC
+ 02DC                   .dbsym r REG_data 10 c
+ 02DC                   .dbsym r REG_Address 12 c
+ 02DC                   .dbsym r SlaveAddress 14 c
+ 02DC                   .dbend
+ 02DC                   .dbfunc e GetData _GetData fS
+ 02DC           ;              L -> R10
+ 02DC           ;              H -> R12
+ 02DC           ;    REG_Address -> R20
+ 02DC           ;   SlaveAddress -> R12
+                        .even
+ 02DC           _GetData::
+ 02DC 0E940000          xcall push_xgset303C
+ 02E0 422F              mov R20,R18
+ 02E2 C02E              mov R12,R16
+ 02E4                   .dbline -1
+ 02E4                   .dbline 304
+ 02E4           ; }
+ 02E4           ; 
+ 02E4           ; /************************************************
+ 02E4           ;  函数名:     GetData
+ 02E4           ;  函数功能:      获取MPU6050的加速度，角速度原始值
+ 02E4           ;  形参:                  要读取的加速度，角速度的地址
+ 02E4           ;  返回参数:      读取到的加速度，角速度
+ 02E4           ; ************************************************/
+ 02E4           ; short GetData(uint8_t SlaveAddress,uint8_t REG_Address)
+ 02E4           ; {
+ 02E4                   .dbline 306
+ 02E4           ;       char H,L;
+ 02E4           ;       L=MPU6050_ReadI2C(SlaveAddress,REG_Address);
+ 02E4 242F              mov R18,R20
+ 02E6 0C2D              mov R16,R12
+ 02E8 D0DF              xcall _MPU6050_ReadI2C
+ 02EA A02E              mov R10,R16
+ 02EC                   .dbline 307
+ 02EC           ;       H=MPU6050_ReadI2C(SlaveAddress,REG_Address+1);
+ 02EC 242F              mov R18,R20
+ 02EE 2F5F              subi R18,255    ; addi 1
+ 02F0 0C2D              mov R16,R12
+ 02F2 CBDF              xcall _MPU6050_ReadI2C
+ 02F4 C02E              mov R12,R16
+ 02F6                   .dbline 308
+ 02F6           ;       return (L<<8)+H;   //合成数据
+ 02F6 1A2D              mov R17,R10
+ 02F8 0C2D              mov R16,R12
+ 02FA                   .dbline -2
+ 02FA           L79:
+ 02FA                   .dbline 0 ; func end
+ 02FA 0C940000          xjmp pop_xgset303C
+ 02FE                   .dbsym r L 10 c
+ 02FE                   .dbsym r H 12 c
+ 02FE                   .dbsym r REG_Address 20 c
+ 02FE                   .dbsym r SlaveAddress 12 c
+ 02FE                   .dbend
+ 02FE           ; }
+ 02FE           ; 
+ 02FE           ; 

@@ -1,0 +1,39 @@
+#ifndef PID_H
+#define PID_H
+/*
+#define PRESENT 2
+#define LAST		1
+#define BEFORE	0
+
+typedef struct 
+{
+	float kp;//比例系数
+	float ki;//积分系数
+	float kd;//微分系数
+	float target;//PID目标
+	float lastcontrol;//最新的输出控制值
+	float enote[3];//误差记录
+	float sumerr;
+}PID_Struture;
+
+void  PID_InitStruture(PID_Struture* pid,float kp,float ki,float kd,float target);//PID结构体初始化
+float PID_devCal(PID_Struture* pid,float fbv);//计算偏差值
+float PID_Inc(PID_Struture* pid);
+float PID_Nor(PID_Struture* pid);
+*/
+
+typedef struct inc_Pid
+{
+	float Target;
+	float Kp;
+	float Ki;
+	float Kd;
+	float pre_Error;
+	float last_Error;
+	float bef_Error;
+}INC_PID;
+
+void Inc_Pid_Config(INC_PID * pid , float set_Kp , float set_Ki , float set_Kd , float set_Target);
+float Inc_Cal(INC_PID * pid , float now_Angle);
+
+#endif

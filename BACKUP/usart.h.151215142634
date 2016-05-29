@@ -1,0 +1,8 @@
+#ifndef __USART_H
+#define __USART_H
+
+void usart0_init(void);
+void send_char(unsigned char sendchar);
+void receive_char(void);
+
+#endif

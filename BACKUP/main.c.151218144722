@@ -1,0 +1,129 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "macros.h"
+#include "motor.h"
+#include "usart.h"
+#include "encoder.h"
+#include "mpu6050.h"
+#include "i2c.h"
+#include "pid.h"
+
+#define _10MS  (0x01)
+#define _50MS  (0x02)
+#define _100MS (0x04)
+#define _1S    (0x08)
+
+unsigned long countLeft = 0;
+unsigned long countRight = 0;
+unsigned int loops = 0;
+unsigned char loopsBit = 0;
+unsigned char timeFlag = 0;
+extern float Roll;
+extern float ay, gx;
+pid_s sPID;	
+float angleTarger;
+float PWM;
+float angle;
+float angle_dot;
+float kp=7500 , ki=0 , kd=-35000;
+int L_pwm,R_pwm;
+
+int main(void)
+{
+	delay_ms(500);
+	
+	usart0_init(9600);
+	printf("\tusart0 init OK!\n");
+	
+	motor_init();
+	PWM_output(1024,1024);
+	encoder_init();
+	
+	MPU6050_Config();
+	Get_Data();			
+	angleTarger = Roll;
+	pid_init(&sPID, kp, ki, kd, angleTarger);	
+	
+	timer3_init();
+	
+	while(1)
+	{
+	    if(loopsBit & _10MS)
+		{	   
+		   loopsBit &= ~(_10MS);
+		   
+		   Get_Data();			
+	 	   angle = Roll;
+	 	   angle_dot = gx;
+	 
+	 	   PWM = pid_proc(&sPID, angle, angle_dot);
+	 
+	 	   L_pwm = (int)PWM;
+	 	   R_pwm = (int)PWM;
+	 
+	 	   //PWM_output(L_pwm, R_pwm);   
+		}
+		
+		if(loopsBit & _50MS)
+		{
+	 	   loopsBit &= ~(_50MS);
+		   
+		   countLeft=0;
+	 	   countRight=0;
+		}
+		
+		if(loopsBit & _100MS)
+		{
+		   loopsBit &= ~(_100MS);
+		}
+		
+		if(loopsBit & _1S)
+		{
+	 	   loopsBit &= ~(_1S);
+		   loops = 0;	   	
+		}
+		
+	}
+	
+	return 0;
+}
+
+//定时器3中断溢出,1ms中断一次
+#pragma interrupt_handler timer3_interrupt: 30
+void timer3_interrupt(void) 
+{    
+	 TCNT3=49535;
+	 loops++; 
+	 
+	 //10ms
+	 if(!(loops % 10))    {loopsBit |= 0x01;}  
+	 //50ms
+	 if(!(loops % 50))    {loopsBit |= 0x02;} 
+	 //100ms
+	 if(!(loops % 100))   {loopsBit |= 0x04;}   
+	 //1s
+	 if(!(loops % 1000))  {loopsBit |= 0x08;}  
+}
+
+//串口0接收中断
+#pragma interrupt_handler uart_receive:19
+void uart_receive(void)
+{  
+   unsigned char rchar;
+
+   rchar = UDR0;
+}
+
+//外部中断0
+#pragma interrupt_handler INT_T0:2
+void INT_T0(void)
+{  
+	 countLeft++;
+}
+
+//外部中断1 
+#pragma interrupt_handler INT_T1:3
+void INT_T1(void)
+{  
+	 countRight++;
+}

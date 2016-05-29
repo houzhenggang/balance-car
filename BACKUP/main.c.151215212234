@@ -1,0 +1,32 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "motor.h"
+#include "usart.h"
+#include "gy_25.h"
+#include "encoder.h"
+
+extern unsigned long countLeft;
+extern unsigned long countRight;
+
+int main(void)
+{
+	usart0_init(9600);
+	printf("usart0 init OK!\n");
+	
+	motor_init();
+	printf("motor init OK!\n");
+	
+	gy_25_init();
+	printf("gy_25 init OK!\n");
+	
+	encoder_init();
+	printf("encoder init OK!\n");
+	
+	while(1)
+	{
+	 	printf("%d\n",countLeft);
+		delay_ms(50);
+	}
+	return 0;
+}
+

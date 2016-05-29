@@ -1,0 +1,496 @@
+                        .module pid.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile pid.c
+ 0000                   .dbfile E:\大学课程\平衡小车设计\平衡小车程序final\pid.c
+ 0000                   .dbfunc e PID_angle_init _PID_angle_init fV
+ 0000                   .dbstruct 0 20 .1
+ 0000                   .dbfield 0 target D
+ 0000                   .dbfield 4 integral D
+ 0000                   .dbfield 8 Kp D
+ 0000                   .dbfield 12 Ki D
+ 0000                   .dbfield 16 Kd D
+ 0000                   .dbend
+ 0000           ;         target -> R22,R23
+ 0000           ;             Kd -> R10,R11
+ 0000           ;             Ki -> R12,R13
+ 0000           ;             Kp -> R14,R15
+ 0000           ;            pid -> R20,R21
+                        .even
+ 0000           _PID_angle_init::
+ 0000 0E940000          xcall push_xgsetF0FC
+ 0004 7901              movw R14,R18
+ 0006 A801              movw R20,R16
+ 0008 CA84              ldd R12,y+10
+ 000A DB84              ldd R13,y+11
+ 000C AC84              ldd R10,y+12
+ 000E BD84              ldd R11,y+13
+ 0010 6E85              ldd R22,y+14
+ 0012 7F85              ldd R23,y+15
+ 0014                   .dbline -1
+ 0014                   .dbline 5
+ 0014           ; #include "iom128v.h"
+ 0014           ; #include "pid.h"
+ 0014           ; 
+ 0014           ; void PID_angle_init(PID_ANGLGE *pid, unsigned int Kp, unsigned int Ki, unsigned int Kd, unsigned int target)
+ 0014           ; {
+ 0014                   .dbline 6
+ 0014           ;       pid->target = target;
+ 0014 8B01              movw R16,R22
+ 0016 0E940000          xcall uint2fp
+ 001A FA01              movw R30,R20
+ 001C 0083              std z+0,R16
+ 001E 1183              std z+1,R17
+ 0020 2283              std z+2,R18
+ 0022 3383              std z+3,R19
+ 0024                   .dbline 7
+ 0024           ;       pid->integral = 0;      
+ 0024 00E0              ldi R16,<L4
+ 0026 10E0              ldi R17,>L4
+ 0028 0E940000          xcall elpm32
+ 002C FA01              movw R30,R20
+ 002E 0483              std z+4,R16
+ 0030 1583              std z+5,R17
+ 0032 2683              std z+6,R18
+ 0034 3783              std z+7,R19
+ 0036                   .dbline 8
+ 0036           ;       pid->Kp = Kp;
+ 0036 8701              movw R16,R14
+ 0038 0E940000          xcall uint2fp
+ 003C FA01              movw R30,R20
+ 003E 0087              std z+8,R16
+ 0040 1187              std z+9,R17
+ 0042 2287              std z+10,R18
+ 0044 3387              std z+11,R19
+ 0046                   .dbline 9
+ 0046           ;       pid->Ki = Ki;
+ 0046 8601              movw R16,R12
+ 0048 0E940000          xcall uint2fp
+ 004C FA01              movw R30,R20
+ 004E 0487              std z+12,R16
+ 0050 1587              std z+13,R17
+ 0052 2687              std z+14,R18
+ 0054 3787              std z+15,R19
+ 0056                   .dbline 10
+ 0056           ;       pid->Kd = Kd;
+ 0056 8501              movw R16,R10
+ 0058 0E940000          xcall uint2fp
+ 005C FA01              movw R30,R20
+ 005E 008B              std z+16,R16
+ 0060 118B              std z+17,R17
+ 0062 228B              std z+18,R18
+ 0064 338B              std z+19,R19
+ 0066                   .dbline -2
+ 0066           L3:
+ 0066                   .dbline 0 ; func end
+ 0066 0C940000          xjmp pop_xgsetF0FC
+ 006A                   .dbsym r target 22 i
+ 006A                   .dbsym r Kd 10 i
+ 006A                   .dbsym r Ki 12 i
+ 006A                   .dbsym r Kp 14 i
+ 006A                   .dbsym r pid 20 pS[.1]
+ 006A                   .dbend
+ 006A                   .dbfunc e PID_Proc _PID_Proc fI
+ 006A           ;         offset -> y+0
+ 006A           ;   differential -> y+10
+ 006A           ;        current -> y+6
+ 006A           ;            pid -> R20,R21
+                        .even
+ 006A           _PID_Proc::
+ 006A 3A93              st -y,r19
+ 006C 2A93              st -y,r18
+ 006E 4A93              st -y,R20
+ 0070 5A93              st -y,R21
+ 0072 A801              movw R20,R16
+ 0074 2497              sbiw R28,4
+ 0076                   .dbline -1
+ 0076                   .dbline 14
+ 0076           ; }
+ 0076           ; 
+ 0076           ; int PID_Proc(PID_ANGLGE *pid, float current, float differential)
+ 0076           ; {
+ 0076                   .dbline 17
+ 0076           ;       float offset;
+ 0076           ; 
+ 0076           ;       offset = pid->target - current;
+ 0076 FA01              movw R30,R20
+ 0078 0081              ldd R16,z+0
+ 007A 1181              ldd R17,z+1
+ 007C 2281              ldd R18,z+2
+ 007E 3381              ldd R19,z+3
+ 0080 CE01              movw R24,R28
+ 0082 0696              adiw R24,6
+ 0084 9A93              st -y,R25
+ 0086 8A93              st -y,R24
+ 0088 0E940000          xcall fpsub1
+ 008C 0883              std y+0,R16
+ 008E 1983              std y+1,R17
+ 0090 2A83              std y+2,R18
+ 0092 3B83              std y+3,R19
+ 0094                   .dbline 18
+ 0094           ;       pid->integral += offset;
+ 0094 CA01              movw R24,R20
+ 0096 0496              adiw R24,4
+ 0098 1C01              movw R2,R24
+ 009A FC01              movw R30,R24
+ 009C 0081              ldd R16,z+0
+ 009E 1181              ldd R17,z+1
+ 00A0 2281              ldd R18,z+2
+ 00A2 3381              ldd R19,z+3
+ 00A4 CE01              movw R24,R28
+ 00A6 9A93              st -y,R25
+ 00A8 8A93              st -y,R24
+ 00AA 0E940000          xcall fpadd1
+ 00AE F101              movw R30,R2
+ 00B0 0083              std z+0,R16
+ 00B2 1183              std z+1,R17
+ 00B4 2283              std z+2,R18
+ 00B6 3383              std z+3,R19
+ 00B8                   .dbline 20
+ 00B8           ; 
+ 00B8           ;       return (int)(pid->Kp*offset + pid->Ki*pid->integral + pid->Kd*differential);
+ 00B8 FA01              movw R30,R20
+ 00BA 0085              ldd R16,z+8
+ 00BC 1185              ldd R17,z+9
+ 00BE 2285              ldd R18,z+10
+ 00C0 3385              ldd R19,z+11
+ 00C2 CE01              movw R24,R28
+ 00C4 9A93              st -y,R25
+ 00C6 8A93              st -y,R24
+ 00C8 0E940000          xcall fpmule1
+ 00CC 1801              movw R2,R16
+ 00CE 2901              movw R4,R18
+ 00D0 FA01              movw R30,R20
+ 00D2 0485              ldd R16,z+12
+ 00D4 1585              ldd R17,z+13
+ 00D6 2685              ldd R18,z+14
+ 00D8 3785              ldd R19,z+15
+ 00DA CF01              movw R24,R30
+ 00DC 0496              adiw R24,4
+ 00DE 9A93              st -y,R25
+ 00E0 8A93              st -y,R24
+ 00E2 0E940000          xcall fpmule1x
+ 00E6 8101              movw R16,R2
+ 00E8 9201              movw R18,R4
+ 00EA 0E940000          xcall fpadd2
+ 00EE 1801              movw R2,R16
+ 00F0 2901              movw R4,R18
+ 00F2 FA01              movw R30,R20
+ 00F4 0089              ldd R16,z+16
+ 00F6 1189              ldd R17,z+17
+ 00F8 2289              ldd R18,z+18
+ 00FA 3389              ldd R19,z+19
+ 00FC CE01              movw R24,R28
+ 00FE 0A96              adiw R24,10
+ 0100 9A93              st -y,R25
+ 0102 8A93              st -y,R24
+ 0104 0E940000          xcall fpmule1x
+ 0108 8101              movw R16,R2
+ 010A 9201              movw R18,R4
+ 010C 0E940000          xcall fpadd2
+ 0110 0E940000          xcall fpint
+ 0114                   .dbline -2
+ 0114           L5:
+ 0114                   .dbline 0 ; func end
+ 0114 2496              adiw R28,4
+ 0116 5991              ld R21,y+
+ 0118 4991              ld R20,y+
+ 011A 2296              adiw R28,2
+ 011C 0895              ret
+ 011E                   .dbsym l offset 0 D
+ 011E                   .dbsym l differential 10 D
+ 011E                   .dbsym l current 6 D
+ 011E                   .dbsym r pid 20 pS[.1]
+ 011E                   .dbend
+ 011E                   .dbfunc e PID_speed_init _PID_speed_init fV
+ 011E                   .dbstruct 0 36 .2
+ 011E                   .dbfield 0 kp D
+ 011E                   .dbfield 4 ki D
+ 011E                   .dbfield 8 kd D
+ 011E                   .dbfield 12 target D
+ 011E                   .dbfield 16 lastcontrol D
+ 011E                   .dbfield 20 enote A[12:3]D
+ 011E                   .dbfield 32 sumerr D
+ 011E                   .dbend
+ 011E           ;         target -> R10,R11
+ 011E           ;             kd -> y+12
+ 011E           ;             ki -> y+8
+ 011E           ;             kp -> y+4
+ 011E           ;            pid -> R20,R21
+                        .even
+ 011E           _PID_speed_init::
+ 011E 3A93              st -y,r19
+ 0120 2A93              st -y,r18
+ 0122 0E940000          xcall push_xgset300C
+ 0126 A801              movw R20,R16
+ 0128 A888              ldd R10,y+16
+ 012A B988              ldd R11,y+17
+ 012C                   .dbline -1
+ 012C                   .dbline 24
+ 012C           ; }
+ 012C           ; 
+ 012C           ; void PID_speed_init(PID_SPEED *pid,float kp,float ki,float kd,int target)
+ 012C           ; {
+ 012C                   .dbline 25
+ 012C           ;       pid->kp = kp;
+ 012C 2C80              ldd R2,y+4
+ 012E 3D80              ldd R3,y+5
+ 0130 4E80              ldd R4,y+6
+ 0132 5F80              ldd R5,y+7
+ 0134 FA01              movw R30,R20
+ 0136 2082              std z+0,R2
+ 0138 3182              std z+1,R3
+ 013A 4282              std z+2,R4
+ 013C 5382              std z+3,R5
+ 013E                   .dbline 26
+ 013E           ;       pid->ki = ki;
+ 013E 2884              ldd R2,y+8
+ 0140 3984              ldd R3,y+9
+ 0142 4A84              ldd R4,y+10
+ 0144 5B84              ldd R5,y+11
+ 0146 3496              adiw R30,4
+ 0148 2082              std z+0,R2
+ 014A 3182              std z+1,R3
+ 014C 4282              std z+2,R4
+ 014E 5382              std z+3,R5
+ 0150                   .dbline 27
+ 0150           ;       pid->kd = kd;
+ 0150 2C84              ldd R2,y+12
+ 0152 3D84              ldd R3,y+13
+ 0154 4E84              ldd R4,y+14
+ 0156 5F84              ldd R5,y+15
+ 0158 FA01              movw R30,R20
+ 015A 2086              std z+8,R2
+ 015C 3186              std z+9,R3
+ 015E 4286              std z+10,R4
+ 0160 5386              std z+11,R5
+ 0162                   .dbline 28
+ 0162           ;       pid->target = target;
+ 0162 8501              movw R16,R10
+ 0164 0E940000          xcall int2fp
+ 0168 FA01              movw R30,R20
+ 016A 0487              std z+12,R16
+ 016C 1587              std z+13,R17
+ 016E 2687              std z+14,R18
+ 0170 3787              std z+15,R19
+ 0172                   .dbline 29
+ 0172           ;       pid->enote[PRESENT] = 0;
+ 0172 00E0              ldi R16,<L4
+ 0174 10E0              ldi R17,>L4
+ 0176 0E940000          xcall elpm32
+ 017A FA01              movw R30,R20
+ 017C 048F              std z+28,R16
+ 017E 158F              std z+29,R17
+ 0180 268F              std z+30,R18
+ 0182 378F              std z+31,R19
+ 0184                   .dbline 30
+ 0184           ;       pid->enote[LAST] = 0;
+ 0184 00E0              ldi R16,<L4
+ 0186 10E0              ldi R17,>L4
+ 0188 0E940000          xcall elpm32
+ 018C FA01              movw R30,R20
+ 018E 008F              std z+24,R16
+ 0190 118F              std z+25,R17
+ 0192 228F              std z+26,R18
+ 0194 338F              std z+27,R19
+ 0196                   .dbline 31
+ 0196           ;       pid->enote[BEFORE] = 0;
+ 0196 00E0              ldi R16,<L4
+ 0198 10E0              ldi R17,>L4
+ 019A 0E940000          xcall elpm32
+ 019E FA01              movw R30,R20
+ 01A0 048B              std z+20,R16
+ 01A2 158B              std z+21,R17
+ 01A4 268B              std z+22,R18
+ 01A6 378B              std z+23,R19
+ 01A8                   .dbline 32
+ 01A8           ;       pid->sumerr = 0;
+ 01A8 00E0              ldi R16,<L7
+ 01AA 10E0              ldi R17,>L7
+ 01AC 0E940000          xcall elpm32
+ 01B0 FA01              movw R30,R20
+ 01B2 00A3              std z+32,R16
+ 01B4 11A3              std z+33,R17
+ 01B6 22A3              std z+34,R18
+ 01B8 33A3              std z+35,R19
+ 01BA                   .dbline -2
+ 01BA           L6:
+ 01BA                   .dbline 0 ; func end
+ 01BA 0E940000          xcall pop_xgset300C
+ 01BE 2296              adiw R28,2
+ 01C0 0895              ret
+ 01C2                   .dbsym r target 10 I
+ 01C2                   .dbsym l kd 12 D
+ 01C2                   .dbsym l ki 8 D
+ 01C2                   .dbsym l kp 4 D
+ 01C2                   .dbsym r pid 20 pS[.2]
+ 01C2                   .dbend
+ 01C2                   .dbfunc e PID_Inc _PID_Inc fI
+ 01C2           ;            fbv -> R12,R13
+ 01C2           ;            pid -> R10,R11
+                        .even
+ 01C2           _PID_Inc::
+ 01C2 0E940000          xcall push_xgsetF03C
+ 01C6 6901              movw R12,R18
+ 01C8 5801              movw R10,R16
+ 01CA 2897              sbiw R28,8
+ 01CC                   .dbline -1
+ 01CC                   .dbline 36
+ 01CC           ; }
+ 01CC           ; 
+ 01CC           ; int PID_Inc(PID_SPEED *pid, int fbv)
+ 01CC           ; {
+ 01CC                   .dbline 37
+ 01CC           ;     pid->enote[BEFORE] = pid->enote[LAST];
+ 01CC F501              movw R30,R10
+ 01CE 208C              ldd R2,z+24
+ 01D0 318C              ldd R3,z+25
+ 01D2 428C              ldd R4,z+26
+ 01D4 538C              ldd R5,z+27
+ 01D6 248A              std z+20,R2
+ 01D8 358A              std z+21,R3
+ 01DA 468A              std z+22,R4
+ 01DC 578A              std z+23,R5
+ 01DE                   .dbline 38
+ 01DE           ;       pid->enote[LAST] = pid->enote[PRESENT];
+ 01DE 248C              ldd R2,z+28
+ 01E0 358C              ldd R3,z+29
+ 01E2 468C              ldd R4,z+30
+ 01E4 578C              ldd R5,z+31
+ 01E6 208E              std z+24,R2
+ 01E8 318E              std z+25,R3
+ 01EA 428E              std z+26,R4
+ 01EC 538E              std z+27,R5
+ 01EE                   .dbline 39
+ 01EE           ;       pid->enote[PRESENT] = (pid->target - fbv);
+ 01EE 2484              ldd R2,z+12
+ 01F0 3584              ldd R3,z+13
+ 01F2 4684              ldd R4,z+14
+ 01F4 5784              ldd R5,z+15
+ 01F6 8601              movw R16,R12
+ 01F8 0E940000          xcall int2fp
+ 01FC 3A93              st -y,R19
+ 01FE 2A93              st -y,R18
+ 0200 1A93              st -y,R17
+ 0202 0A93              st -y,R16
+ 0204 8101              movw R16,R2
+ 0206 9201              movw R18,R4
+ 0208 0E940000          xcall fpsub2
+ 020C F501              movw R30,R10
+ 020E 048F              std z+28,R16
+ 0210 158F              std z+29,R17
+ 0212 268F              std z+30,R18
+ 0214 378F              std z+31,R19
+ 0216                   .dbline 41
+ 0216           ;       
+ 0216           ;       pid->lastcontrol = pid->kp*(pid->enote[PRESENT] - pid->enote[LAST]) + pid->ki*pid->enote[PRESENT] + pid->kd*(pid->enote[PRESENT] - 2*pid->enote[LAST] +pid->enote[BEFORE]); 
+ 0216 7C96              adiw R30,28
+ 0218 2080              ldd R2,z+0
+ 021A 3180              ldd R3,z+1
+ 021C 4280              ldd R4,z+2
+ 021E 5380              ldd R5,z+3
+ 0220 2882              std y+0,R2
+ 0222 3982              std y+1,R3
+ 0224 4A82              std y+2,R4
+ 0226 5B82              std y+3,R5
+ 0228 F501              movw R30,R10
+ 022A 7896              adiw R30,24
+ 022C 2080              ldd R2,z+0
+ 022E 3180              ldd R3,z+1
+ 0230 4280              ldd R4,z+2
+ 0232 5380              ldd R5,z+3
+ 0234 2C82              std y+4,R2
+ 0236 3D82              std y+5,R3
+ 0238 4E82              std y+6,R4
+ 023A 5F82              std y+7,R5
+ 023C F501              movw R30,R10
+ 023E 2080              ldd R2,z+0
+ 0240 3180              ldd R3,z+1
+ 0242 4280              ldd R4,z+2
+ 0244 5380              ldd R5,z+3
+ 0246 0881              ldd R16,y+0
+ 0248 1981              ldd R17,y+1
+ 024A 2A81              ldd R18,y+2
+ 024C 3B81              ldd R19,y+3
+ 024E CE01              movw R24,R28
+ 0250 0496              adiw R24,4
+ 0252 9A93              st -y,R25
+ 0254 8A93              st -y,R24
+ 0256 0E940000          xcall fpsub1x
+ 025A 8101              movw R16,R2
+ 025C 9201              movw R18,R4
+ 025E 0E940000          xcall fpmule2
+ 0262 1801              movw R2,R16
+ 0264 2901              movw R4,R18
+ 0266 F501              movw R30,R10
+ 0268 0481              ldd R16,z+4
+ 026A 1581              ldd R17,z+5
+ 026C 2681              ldd R18,z+6
+ 026E 3781              ldd R19,z+7
+ 0270 CE01              movw R24,R28
+ 0272 9A93              st -y,R25
+ 0274 8A93              st -y,R24
+ 0276 0E940000          xcall fpmule1x
+ 027A 8101              movw R16,R2
+ 027C 9201              movw R18,R4
+ 027E 0E940000          xcall fpadd2
+ 0282 1801              movw R2,R16
+ 0284 2901              movw R4,R18
+ 0286 F501              movw R30,R10
+ 0288 3896              adiw R30,8
+ 028A 6080              ldd R6,z+0
+ 028C 7180              ldd R7,z+1
+ 028E 8280              ldd R8,z+2
+ 0290 9380              ldd R9,z+3
+ 0292 4881              ldd R20,y+0
+ 0294 5981              ldd R21,y+1
+ 0296 6A81              ldd R22,y+2
+ 0298 7B81              ldd R23,y+3
+ 029A 00E0              ldi R16,<L9
+ 029C 10E0              ldi R17,>L9
+ 029E 0E940000          xcall elpm32
+ 02A2 CE01              movw R24,R28
+ 02A4 0496              adiw R24,4
+ 02A6 9A93              st -y,R25
+ 02A8 8A93              st -y,R24
+ 02AA 0E940000          xcall fpmule1x
+ 02AE 8A01              movw R16,R20
+ 02B0 9B01              movw R18,R22
+ 02B2 0E940000          xcall fpsub2
+ 02B6 C501              movw R24,R10
+ 02B8 4496              adiw R24,20
+ 02BA 9A93              st -y,R25
+ 02BC 8A93              st -y,R24
+ 02BE 0E940000          xcall fpadd1x
+ 02C2 8301              movw R16,R6
+ 02C4 9401              movw R18,R8
+ 02C6 0E940000          xcall fpmule2x
+ 02CA 8101              movw R16,R2
+ 02CC 9201              movw R18,R4
+ 02CE 0E940000          xcall fpadd2
+ 02D2 F501              movw R30,R10
+ 02D4 008B              std z+16,R16
+ 02D6 118B              std z+17,R17
+ 02D8 228B              std z+18,R18
+ 02DA 338B              std z+19,R19
+ 02DC                   .dbline 42
+ 02DC           ;       return ((int)pid->lastcontrol);
+ 02DC 0E940000          xcall fpint
+ 02E0                   .dbline -2
+ 02E0           L8:
+ 02E0                   .dbline 0 ; func end
+ 02E0 2896              adiw R28,8
+ 02E2 0C940000          xjmp pop_xgsetF03C
+ 02E6                   .dbsym r fbv 12 I
+ 02E6                   .dbsym r pid 10 pS[.2]
+ 02E6                   .dbend
+                        .area lit(rom, con, rel)
+ 0000           L9:
+ 0000 00000040          .word 0x0,0x4000
+ 0004           L7:
+ 0004 00000000          .word 0x0,0x0
+ 0008           L4:
+ 0008 00000000          .word 0x0,0x0
+ 000C           ; }
+ 000C           ; 
+ 000C           ; 
+ 000C           ; 

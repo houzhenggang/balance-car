@@ -1,0 +1,56 @@
+#include "iom128v.h"
+#include "stdio.h"
+#include "motor.h"
+#include "usart.h"
+#include "gy_25.h"
+#include "encoder.h"
+
+unsigned long countLeft = 0;
+unsigned long countRight = 0;
+
+int main(void)
+{
+	usart0_init(9600);
+	printf("usart0 init OK!\n");
+	
+	motor_init();
+	printf("motor init OK!\n");
+	
+	gy_25_init();
+	printf("gy_25 init OK!\n");
+	
+	encoder_init();
+	printf("encoder init OK!\n");
+	
+	while(1)
+	{
+	 	//printf("%d\n",countLeft);
+		delay_ms(50);
+	}
+	return 0;
+}
+
+//外部中断0
+#pragma interrupt_handler INT_T0:2
+void INT_T0(void)
+{
+ 	 countLeft++;
+}
+
+//外部中断1 
+#pragma interrupt_handler INT_T1:3
+void INT_T1(void)
+{
+ 	 countRight++;
+}
+
+//串口0接收中断
+#pragma interrupt_handler uart_receive:19
+void uart_receive(void)
+{  
+   unsigned char rchar;
+   
+   rchar = UDR0;
+  
+   send_char(rchar);
+}

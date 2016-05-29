@@ -1,0 +1,88 @@
+XL
+H 1 areas 7 global symbols
+M usart.c
+S mod32s Ref0000
+S div32s Ref0000
+S push_xgsetF00C Ref0000
+S pop_xgsetF00C Ref0000
+A text size FC flags 0
+dbfile usart.c
+dbfile E:\大学课程\平衡小车设计\平衡小车程序final\usart.c
+dbfunc e usart0_init 0 fV
+dbsym r band A i
+dbline FFFFFFFF 6
+dbline 7 6
+dbline 9 6
+dbline C C
+dbline D 6C
+dbline 10 CE
+dbline 11 D2
+dbline 14 D6
+dbline FFFFFFFE D8
+dbline 0 D8
+dbfunc e send_char DC fV
+dbsym r data 10 c
+dbline FFFFFFFF DC
+dbline 19 DC
+dbline 1B DC
+dbline 1B DC
+dbline 1D E0
+dbline FFFFFFFE E2
+dbline 0 E2
+dbfunc e putchar E4 fI
+dbsym r input 10 c
+dbline FFFFFFFF E4
+dbline 21 E4
+dbline 22 E4
+dbline 23 E8
+dbline 24 E8
+dbline 24 E8
+dbline 25 EC
+dbline 26 F0
+dbline 28 F0
+dbline 28 F0
+dbline 29 F4
+dbline 2A F6
+dbline FFFFFFFE FA
+dbline 0 FA
+S _send_char Def00DC
+S _putchar$device_specific$ Def00E4
+S _usart0_init Def0000
+T 00 00 0E 94 00 00 58 01 86 E0 80 93 95 00 15 01
+R 00 00 00 00 12 04 02 00
+T 0E 00 44 24 55 24 40 E0 54 E2 64 EF 70 E0 5A 92
+R 00 00 00 00
+T 1C 00 4A 92 3A 92 2A 92 8A 01 9B 01 0E 94 00 00
+R 00 00 00 00 12 0E 01 00
+T 2A 00 40 E1 50 E0 60 E0 70 E0 7A 93 6A 93 5A 93
+R 00 00 00 00
+T 38 00 4A 93 0E 94 00 00 18 01 29 01 41 E0 50 E0
+R 00 00 00 00 12 06 01 00
+T 46 00 60 E0 70 E0 24 1A 35 0A 46 0A 57 0A 40 E0
+R 00 00 00 00
+T 54 00 51 E0 60 E0 70 E0 7A 93 6A 93 5A 93 4A 93
+R 00 00 00 00
+T 62 00 81 01 92 01 0E 94 00 00 09 B9 15 01 44 24
+R 00 00 00 00 12 08 00 00
+T 70 00 55 24 40 E0 54 E2 64 EF 70 E0 5A 92 4A 92
+R 00 00 00 00
+T 7E 00 3A 92 2A 92 8A 01 9B 01 0E 94 00 00 40 E1
+R 00 00 00 00 12 0C 01 00
+T 8C 00 50 E0 60 E0 70 E0 7A 93 6A 93 5A 93 4A 93
+R 00 00 00 00
+T 9A 00 0E 94 00 00 18 01 29 01 41 E0 50 E0 60 E0
+R 00 00 00 00 12 04 01 00
+T A8 00 70 E0 24 1A 35 0A 46 0A 57 0A 40 E0 51 E0
+R 00 00 00 00
+T B6 00 60 E0 70 E0 7A 93 6A 93 5A 93 4A 93 81 01
+R 00 00 00 00
+T C4 00 92 01 0E 94 00 00 00 93 90 00 22 24 2B B8
+R 00 00 00 00 12 06 01 00
+T D2 00 88 E9 8A B9 78 94 0C 94 00 00
+R 00 00 00 00 12 0A 03 00
+T DC 00 5D 9B FE CF 0C B9 08 95
+R 00 00 00 00
+T E4 00 0A 30 21 F4 5D 9B FE CF 89 E0 8C B9 5D 9B
+R 00 00 00 00
+T F2 00 FE CF 0C B9 01 E0 10 E0 08 95
+R 00 00 00 00
